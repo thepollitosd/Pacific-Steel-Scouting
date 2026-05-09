@@ -1,14 +1,23 @@
 import { action, internalMutation, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
 
 export const importEvent = action({
-  args: { eventKey: v.string(), apiKey: v.string() },
+  args: { eventKey: v.string() },
   handler: async (ctx, args) => {
+    // Role check
+    const user = await ctx.runQuery(api.users.current);
+    if (!user || user.role !== "Admin") {
+      throw new Error("Forbidden: Only Admins can import events.");
+    }
+
+    const apiKey = process.env.TBA_API_KEY;
+    if (!apiKey) throw new Error("TBA_API_KEY environment variable is not set");
+
     const headers = {
-      "X-TBA-Auth-Key": args.apiKey,
+      "X-TBA-Auth-Key": apiKey,
     };
 
     // 1. Fetch Event Details

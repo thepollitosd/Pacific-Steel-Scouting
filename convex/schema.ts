@@ -4,6 +4,12 @@ import { authTables } from "@convex-dev/auth/server";
 
 export default defineSchema({
   ...authTables,
+  users: defineTable({
+    name: v.optional(v.string()),
+    email: v.optional(v.string()),
+    image: v.optional(v.string()),
+    role: v.optional(v.string()), // "Admin", "Scout", "Pit Scout", "Drive Team", "Strategist"
+  }),
 
   // Event Data
   events: defineTable({

@@ -28,6 +28,11 @@ import { useConvexAuth } from "convex/react";
 import { EventSetup } from "./pages/setup";
 import { TeamList } from "./pages/team-list";
 import { PitMap } from "./pages/pit-map";
+import { Dashboard } from "./pages/dashboard";
+import { MatchScouting } from "./pages/match-scouting";
+import { PitScouting } from "./pages/pit-scouting";
+import { PickLists } from "./pages/pick-lists";
+import { DriveTeamHub } from "./pages/drive-team-hub";
 
 function NavItem({ icon: Icon, label, href }: { icon: any, label: string, href: string }) {
   const navigate = useNavigate();
@@ -51,6 +56,8 @@ function NavItem({ icon: Icon, label, href }: { icon: any, label: string, href: 
 function RootLayout() {
   const isSidebarOpen = useUIStore((state) => state.isSidebarOpen);
   const { isAuthenticated, isLoading } = useConvexAuth();
+
+  console.log("RootLayout auth state:", { isAuthenticated, isLoading });
 
   if (isLoading) return null;
   if (!isAuthenticated) return <SignIn />;
@@ -96,11 +103,7 @@ function RootLayout() {
   );
 }
 
-const Dashboard = () => <div className="space-y-4"><h1 className="text-3xl font-bold">Dashboard</h1><p className="text-muted-foreground">Welcome to the scouting hub.</p></div>;
-const MatchScouting = () => <div className="space-y-4"><h1 className="text-3xl font-bold">Match Scouting</h1></div>;
-const PitScouting = () => <div className="space-y-4"><h1 className="text-3xl font-bold">Pit Scouting Overview</h1></div>;
-const PickLists = () => <div className="space-y-4"><h1 className="text-3xl font-bold">Pick Lists</h1></div>;
-const DriveTeamHub = () => <div className="space-y-4"><h1 className="text-3xl font-bold">Drive Team Hub</h1></div>;
+// Pages are imported from src/pages
 
 const router = createBrowserRouter([
   {

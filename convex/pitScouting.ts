@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireRole } from "./users";
 
 export const savePitScouting = mutation({
   args: {
@@ -14,8 +14,7 @@ export const savePitScouting = mutation({
     notes: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await requireRole(ctx, ["Pit Scout", "Admin"]);
 
     const existing = await ctx.db.query("pitScouting")
       .withIndex("by_event_team", q => q.eq("eventId", args.eventId).eq("teamNumber", args.teamNumber))
@@ -41,5 +40,14 @@ export const getPitScouting = query({
     return await ctx.db.query("pitScouting")
       .withIndex("by_event_team", q => q.eq("eventId", args.eventId).eq("teamNumber", args.teamNumber))
       .first();
+  },
+});
+
+export const getPitScoutingForEvent = query({
+  args: { eventId: v.id("events") },
+  handler: async (ctx, args) => {
+    return await ctx.db.query("pitScouting")
+      .withIndex("by_event_team", q => q.eq("eventId", args.eventId))
+      .collect();
   },
 });

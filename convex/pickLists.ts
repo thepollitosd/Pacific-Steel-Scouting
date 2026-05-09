@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { requireRole } from "./users";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const getMyPickLists = query({
@@ -21,8 +22,7 @@ export const createPickList = mutation({
     name: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await requireRole(ctx, ["Strategist", "Admin"]);
 
     const defaultTiers = [
       { name: "Tier 1", teams: [] as number[] },
@@ -58,6 +58,17 @@ export const updatePickListTiers = mutation({
     })),
   },
   handler: async (ctx, args) => {
+    const userId = await requireRole(ctx, ["Strategist", "Admin"]);
+    const pickList = await ctx.db.get(args.pickListId);
+    if (!pickList) throw new Error("Pick list not found");
+    
+    if (pickList.userId !== userId) {
+      const user = await ctx.db.get(userId);
+      if (user?.role !== "Admin") {
+        throw new Error("Forbidden: You can only update your own pick lists.");
+      }
+    }
+    
     await ctx.db.patch(args.pickListId, { tiers: args.tiers });
   },
 });

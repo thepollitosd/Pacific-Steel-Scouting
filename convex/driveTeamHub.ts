@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireRole } from "./users";
 
 export const getRequests = query({
   args: { eventId: v.optional(v.id("events")) },
@@ -22,8 +22,7 @@ export const createRequest = mutation({
     note: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await requireRole(ctx, ["Drive Team", "Admin"]);
 
     await ctx.db.insert("requests", {
       ...args,
@@ -40,6 +39,7 @@ export const respondToRequest = mutation({
     response: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireRole(ctx, ["Drive Team", "Admin"]);
     await ctx.db.patch(args.requestId, {
       status: "completed",
       response: args.response,

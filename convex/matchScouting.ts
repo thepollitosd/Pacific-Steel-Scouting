@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireRole } from "./users";
 
 export const saveMatchScouting = mutation({
   args: {
@@ -26,8 +26,7 @@ export const saveMatchScouting = mutation({
     tags: v.array(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await requireRole(ctx, ["Scout", "Admin"]);
 
     const existing = await ctx.db.query("matchScouting")
       .withIndex("by_match_team", q => q.eq("eventId", args.eventId).eq("matchNumber", args.matchNumber).eq("teamNumber", args.teamNumber))
@@ -40,6 +39,9 @@ export const saveMatchScouting = mutation({
     };
 
     if (existing) {
+      if (existing.scouterId !== userId) {
+        throw new Error("This robot is already being scouted by another user for this match.");
+      }
       await ctx.db.patch(existing._id, data);
     } else {
       await ctx.db.insert("matchScouting", data);
