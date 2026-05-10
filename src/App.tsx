@@ -7,6 +7,7 @@ import { RouterProvider, createBrowserRouter, Outlet, useNavigate, useLocation }
 import { ThemeProvider } from "next-themes";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { useEffect } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { Toaster } from "@/components/ui/sonner";
 import { convex } from "./lib/convex";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -182,6 +183,7 @@ export default function App() {
           <RouterProvider router={router} />
         </TooltipProvider>
       </ThemeProvider>
+      <Analytics />
     </ConvexAuthProvider>
   );
 }
