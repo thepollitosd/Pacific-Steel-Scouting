@@ -32,9 +32,11 @@ import {
   WifiOff,
   HelpCircle,
   ShieldCheck,
-  FileText,
   Target,
-  Download
+  Download,
+  PenTool,
+  FileText,
+  ChevronLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,22 +62,26 @@ import { PrivacyPolicy } from "./pages/privacy";
 import { TermsOfService } from "./pages/terms";
 import { MatchStrategy } from "./pages/match-strategy";
 import { DataExport } from "./pages/data-export";
+import { Whiteboard } from "./pages/whiteboard";
 
 function NavItem({ icon: Icon, label, href }: { icon: any, label: string, href: string }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isActive = location.pathname === href;
+  const isSidebarOpen = useUIStore((state) => state.isSidebarOpen);
 
   return (
     <button
       onClick={() => navigate(href)}
       className={cn(
         "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-        isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+        isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground",
+        !isSidebarOpen && "justify-center px-2"
       )}
+      title={!isSidebarOpen ? label : undefined}
     >
-      <Icon className="h-4 w-4" />
-      {label}
+      <Icon className="h-4 w-4 shrink-0" />
+      {isSidebarOpen && <span className="truncate">{label}</span>}
     </button>
   );
 }
@@ -191,6 +197,7 @@ function TopHeader() {
 
 function RootLayout() {
   const isSidebarOpen = useUIStore((state) => state.isSidebarOpen);
+  const toggleSidebar = useUIStore((state) => state.toggleSidebar);
   const defaultLandingPage = useUIStore((state) => state.defaultLandingPage);
   const { isAuthenticated, isLoading } = useConvexAuth();
   const user = useQuery(api.users.current);
@@ -218,8 +225,30 @@ function RootLayout() {
         isSidebarOpen ? "w-64" : "w-16"
       )}>
         <div className="flex h-14 items-center border-b px-4 font-bold tracking-tight">
-          <Zap className="h-5 w-5 text-primary mr-2 shrink-0" />
-          {isSidebarOpen && <span className="truncate">Pacific Scout 2026</span>}
+          {isSidebarOpen ? (
+            <>
+              <Zap className="h-5 w-5 text-primary mr-2 shrink-0" />
+              <span className="truncate flex-1">Pacific Scout 2026</span>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => toggleSidebar()} 
+                className="h-8 w-8"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </>
+          ) : (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => toggleSidebar()} 
+              className="h-10 w-10 mx-auto"
+              title="Expand Sidebar"
+            >
+              <Zap className="h-5 w-5 text-primary" />
+            </Button>
+          )}
         </div>
         <nav className="flex-1 space-y-1 p-2 overflow-y-auto">
           <NavItem icon={LayoutDashboard} label="Dashboard" href="/" />
@@ -230,6 +259,7 @@ function RootLayout() {
           <NavItem icon={ListOrdered} label="Pick Lists" href="/pick-lists" />
           <NavItem icon={Zap} label="Drive Team Hub" href="/hub" />
           <NavItem icon={Target} label="Match Strategy" href="/strategy" />
+          <NavItem icon={PenTool} label="Whiteboard" href="/whiteboard" />
           <NavItem icon={Download} label="Data Export" href="/export" />
           <NavItem icon={Paintbrush} label="Customization" href="/customization" />
         </nav>
@@ -261,8 +291,8 @@ function RootLayout() {
         ) : isStrategist ? (
           <>
             <MobileNavItem icon={Target} label="Strategy" href="/strategy" />
+            <MobileNavItem icon={PenTool} label="Whiteboard" href="/whiteboard" />
             <MobileNavItem icon={ListOrdered} label="Picks" href="/pick-lists" />
-            <MobileNavItem icon={Download} label="Export" href="/export" />
           </>
         ) : (
           <>
@@ -297,6 +327,7 @@ const router = createBrowserRouter([
       { path: "pick-lists/edit", element: <PickLists /> },
       { path: "hub", element: <DriveTeamHub /> },
       { path: "strategy", element: <MatchStrategy /> },
+      { path: "whiteboard", element: <Whiteboard /> },
       { path: "export", element: <DataExport /> },
       { path: "setup", element: <EventSetup /> },
       { path: "customization", element: <Customization /> },
