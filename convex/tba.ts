@@ -70,3 +70,21 @@ export const importEvent = action({
     return { success: true, eventKey: args.eventKey };
   },
 });
+
+export const getTeamMedia = action({
+  args: { teamNumber: v.number(), year: v.number() },
+  handler: async (ctx, args) => {
+    const apiKey = process.env.TBA_API_KEY;
+    if (!apiKey) throw new Error("TBA_API_KEY environment variable is not set");
+
+    const headers = {
+      "X-TBA-Auth-Key": apiKey,
+    };
+
+    const res = await fetch(`${TBA_BASE_URL}/team/frc${args.teamNumber}/media/${args.year}`, { headers });
+    if (!res.ok) throw new Error("Failed to fetch media from TBA");
+    
+    const media = await res.json();
+    return media;
+  },
+});

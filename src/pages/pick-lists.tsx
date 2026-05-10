@@ -8,13 +8,49 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { SortableContext, arrayMove, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSearchParams } from "react-router";
+import { Shield, Crosshair, Asterisk, CirclePile, Tally1, Tally2, Tally3, Tally4, Tally5 } from "lucide-react";
+import { useStatboticsEvent } from "../hooks/use-statbotics";
 
-function SortableTeam({ id, number }: { id: number, number: number }) {
+function SortableTeam({ id, number, pitData, epa }: { id: number, number: number, pitData?: any, epa?: number }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
   const style = { transform: CSS.Transform.toString(transform), transition };
+  
+  const shooterType = pitData?.shooterType;
+  let RobotIcon = Shield;
+  if (shooterType === "Turret") RobotIcon = Crosshair;
+  else if (shooterType === "Dumper") RobotIcon = CirclePile;
+  else if (shooterType === "Misc") {
+    const paths = pitData?.shootingPaths;
+    if (paths === 1) RobotIcon = Tally1;
+    else if (paths === 2) RobotIcon = Tally2;
+    else if (paths === 3) RobotIcon = Tally3;
+    else if (paths === 4) RobotIcon = Tally4;
+    else if (paths === 5) RobotIcon = Tally5;
+    else RobotIcon = Asterisk;
+  }
+
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="p-3 bg-background border rounded-lg shadow-sm font-bold flex justify-between items-center touch-none hover:bg-muted/50 cursor-grab">
-      <span>{number}</span>
+      <div className="flex items-center gap-3">
+        <RobotIcon className="h-5 w-5 text-primary" />
+        <div>
+          <div className="flex items-center gap-2">
+            <span>{number}</span>
+            {epa !== undefined && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-500/20 text-blue-500">
+                EPA {epa.toFixed(1)}
+              </span>
+            )}
+          </div>
+          {pitData && (
+            <p className="text-xs text-muted-foreground font-normal">
+              {pitData.drivetrain || "Unknown DT"} | {pitData.climbLevels?.join(", ") || "No Climb"}
+              {(pitData.shooterType === "Turret" || pitData.shooterType === "Misc") && pitData.shootingPaths ? ` | ${pitData.shootingPaths} Path${pitData.shootingPaths > 1 ? 's' : ''}` : ""}
+            </p>
+          )}
+        </div>
+      </div>
       <span className="text-xs text-muted-foreground">::</span>
     </div>
   );
@@ -33,8 +69,13 @@ function DroppableTier({ id, children, name, count }: { id: string, children: Re
 }
 
 export function PickLists() {
+  const [searchParams] = useSearchParams();
+  const listIdFromUrl = searchParams.get("id");
+
   const activeEvent = useQuery(api.events.getActiveEvent);
   const pickLists = useQuery(api.pickLists.getMyPickLists, { eventId: activeEvent?._id });
+  const pitScouting = useQuery(api.pitScouting.getPitScoutingForEvent, activeEvent ? { eventId: activeEvent._id } : "skip");
+  const { data: statboticsData } = useStatboticsEvent(activeEvent?.key);
   const createList = useMutation(api.pickLists.createPickList);
   const updateTiers = useMutation(api.pickLists.updatePickListTiers);
   
@@ -44,20 +85,16 @@ export function PickLists() {
 
   useEffect(() => {
     if (pickLists && pickLists.length > 0) {
-      if (!activeListId) {
-        setActiveListId(pickLists[0]._id);
-        setTiers(pickLists[0].tiers);
-      } else {
-        const activeList = pickLists.find(l => l._id === activeListId);
-        if (activeList) {
-          setTiers(activeList.tiers);
-        }
-      }
+      const targetId = listIdFromUrl || activeListId;
+      const activeList = pickLists.find(l => l._id === targetId) || pickLists[0];
+      
+      setActiveListId(activeList._id);
+      setTiers(activeList.tiers);
     } else {
       setTiers([]);
       setActiveListId(null);
     }
-  }, [pickLists, activeListId]);
+  }, [pickLists, activeListId, listIdFromUrl]);
 
   const handleCreate = async () => {
     if (!activeEvent || !newListName) return;
@@ -157,15 +194,29 @@ export function PickLists() {
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <div className="flex-1 flex overflow-x-auto gap-4 pb-4">
-            {tiers.map((tier: any) => (
-              <DroppableTier key={tier.name} id={tier.name} name={tier.name} count={tier.teams.length}>
-                <SortableContext items={tier.teams} strategy={verticalListSortingStrategy}>
-                  {tier.teams.map((teamNum: number) => (
-                    <SortableTeam key={teamNum} id={teamNum} number={teamNum} />
-                  ))}
-                </SortableContext>
-              </DroppableTier>
-            ))}
+            {tiers.map((tier: any) => {
+              const displayTeams = tier.name === "Uncategorized" && statboticsData 
+                ? [...tier.teams].sort((a, b) => {
+                    const epaA = statboticsData.find(s => s.team === a)?.epa?.total_points?.mean ?? -1;
+                    const epaB = statboticsData.find(s => s.team === b)?.epa?.total_points?.mean ?? -1;
+                    return epaB - epaA;
+                  })
+                : tier.teams;
+
+              return (
+                <DroppableTier key={tier.name} id={tier.name} name={tier.name} count={tier.teams.length}>
+                  <SortableContext items={displayTeams} strategy={verticalListSortingStrategy}>
+                    {displayTeams.map((teamNum: number) => {
+                      const pitData = pitScouting?.find(p => p.teamNumber === teamNum);
+                      const epa = statboticsData?.find(s => s.team === teamNum)?.epa?.total_points?.mean;
+                      return (
+                        <SortableTeam key={teamNum} id={teamNum} number={teamNum} pitData={pitData} epa={epa} />
+                      );
+                    })}
+                  </SortableContext>
+                </DroppableTier>
+              );
+            })}
           </div>
         </DndContext>
       )}

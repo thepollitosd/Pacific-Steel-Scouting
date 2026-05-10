@@ -8,13 +8,12 @@ export const saveMatchScouting = mutation({
     matchNumber: v.number(),
     teamNumber: v.number(),
     auto: v.object({
-      coral: v.array(v.number()),
-      algae: v.array(v.number()),
+      ballsShot: v.number(),
+      climb: v.string(),
       notes: v.string(),
     }),
     teleop: v.object({
-      coral: v.array(v.number()),
-      algae: v.array(v.number()),
+      ballsShot: v.number(),
       notes: v.string(),
     }),
     endgame: v.object({
@@ -46,5 +45,14 @@ export const saveMatchScouting = mutation({
     } else {
       await ctx.db.insert("matchScouting", data);
     }
+  },
+});
+
+export const getByTeam = query({
+  args: { eventId: v.id("events"), teamNumber: v.number() },
+  handler: async (ctx, args) => {
+    return await ctx.db.query("matchScouting")
+      .withIndex("by_event_team", q => q.eq("eventId", args.eventId).eq("teamNumber", args.teamNumber))
+      .collect();
   },
 });

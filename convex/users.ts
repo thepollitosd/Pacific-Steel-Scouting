@@ -38,3 +38,11 @@ export const updateRole = mutation({
     await ctx.db.patch(args.userId, { role: args.role });
   },
 });
+export const updateProfile = mutation({
+  args: { name: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Unauthorized");
+    await ctx.db.patch(userId, { name: args.name });
+  },
+});

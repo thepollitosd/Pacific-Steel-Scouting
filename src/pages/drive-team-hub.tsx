@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Send, Clock, CheckCircle } from "lucide-react";
+import { Send, Clock, CheckCircle, Trash2 } from "lucide-react";
 
 export function DriveTeamHub() {
   const activeEvent = useQuery(api.events.getActiveEvent);
   const requests = useQuery(api.driveTeamHub.getRequests, { eventId: activeEvent?._id });
   const createRequest = useMutation(api.driveTeamHub.createRequest);
   const respondToRequest = useMutation(api.driveTeamHub.respondToRequest);
+  const deleteRequest = useMutation(api.driveTeamHub.deleteRequest);
 
   const [targetTeam, setTargetTeam] = useState("");
   const [type, setType] = useState("location");
@@ -46,6 +47,15 @@ export function DriveTeamHub() {
     }
   };
 
+  const handleDeleteRequest = async (id: any) => {
+    try {
+      await deleteRequest({ requestId: id });
+      toast.success("Request deleted");
+    } catch {
+      toast.error("Failed to delete request");
+    }
+  };
+
   const pendingRequests = requests?.filter((r) => r.status === "pending") || [];
   const completedRequests = requests?.filter((r) => r.status === "completed") || [];
 
@@ -63,9 +73,9 @@ export function DriveTeamHub() {
           <form onSubmit={handleCreateRequest} className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Target Team</label>
-              <Input type="number" placeholder="4414" value={targetTeam} onChange={(e) => setTargetTeam(e.target.value)} required />
+              <Input type="number" placeholder="5025" value={targetTeam} onChange={(e) => setTargetTeam(e.target.value)} required />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Type</label>
@@ -125,7 +135,7 @@ export function DriveTeamHub() {
                   </span>
                 </div>
                 {req.note && <p className="text-sm border-l-2 border-primary/50 pl-2 py-1">{req.note}</p>}
-                
+
                 {/* Simulated Quick Responses for Pit Scouts */}
                 <div className="flex flex-wrap gap-2 pt-2 border-t border-border/50">
                   <Button size="sm" variant="secondary" onClick={() => handleRespond(req._id, "On the way")} className="text-xs">On the way</Button>
@@ -141,11 +151,19 @@ export function DriveTeamHub() {
           </h2>
           <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
             {completedRequests.map((req) => (
-              <div key={req._id} className="p-3 rounded-xl border bg-muted/5 opacity-75">
-                <div className="flex justify-between items-center mb-1">
+              <div key={req._id} className="p-3 rounded-xl border bg-muted/5 opacity-75 flex justify-between items-center">
+                <div>
                   <span className="font-semibold text-sm">Team {req.targetTeamNumber}</span>
-                  <span className="text-xs text-green-500">{req.response}</span>
+                  <p className="text-xs text-green-500 mt-1">{req.response}</p>
                 </div>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => handleDeleteRequest(req._id)}
+                  className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             ))}
           </div>

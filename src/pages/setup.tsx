@@ -15,6 +15,7 @@ export function EventSetup() {
   const currentUser = useQuery(api.users.current);
   const users = useQuery(api.users.getUsers, currentUser?.role === "Admin" ? {} : "skip");
   const updateRole = useMutation(api.users.updateRole);
+  const resetAllData = useMutation(api.events.resetAllData);
 
   const [tbaKey, setTbaKey] = useState("");
   const [isImporting, setIsImporting] = useState(false);
@@ -51,6 +52,16 @@ export function EventSetup() {
     }
   };
 
+  const handleResetData = async () => {
+    if (!confirm("Are you sure you want to reset all data? This cannot be undone!")) return;
+    try {
+      await resetAllData();
+      toast.success("All data has been reset!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to reset data");
+    }
+  };
+
   const handleRoleChange = async (userId: any, newRole: string) => {
     try {
       await updateRole({ userId, role: newRole });
@@ -75,9 +86,14 @@ export function EventSetup() {
             <span className="text-sm text-foreground/80">{activeEvent.city}, {activeEvent.state}</span>
           </div>
           {currentUser?.role === "Admin" && (
-            <Button onClick={handleImportPits} disabled={isImportingPits} variant="outline" className="w-full mt-2">
-              {isImportingPits ? "Importing Pits..." : "Import Pit Locations from Nexus"}
-            </Button>
+            <div className="flex flex-col gap-2 mt-2">
+              <Button onClick={handleImportPits} disabled={isImportingPits} variant="outline" className="w-full">
+                {isImportingPits ? "Importing Pits..." : "Import Pit Locations from Nexus"}
+              </Button>
+              <Button onClick={handleResetData} variant="destructive" className="w-full">
+                Reset All Data
+              </Button>
+            </div>
           )}
         </div>
       )}

@@ -45,13 +45,36 @@ export default defineSchema({
     eventId: v.id("events"),
     teamNumber: v.number(),
     
-    // Capabilities
-    coralLevels: v.array(v.number()), // [1, 2, 3, 4]
-    algaeLevels: v.array(v.string()), // ["high", "low"]
-    climbLevels: v.array(v.string()), // ["high", "low"]
+    // 2026 Game REBUILT Capabilities
+    // Group 1
+    trench: v.boolean(),
+    bump: v.boolean(),
     
-    // Specs
+    // Group 2
+    climbLevels: v.array(v.string()), // ["L1", "L2", "L3"]
+    canClimbInAuto: v.boolean(),
+    
+    // Group 3
+    depot: v.boolean(),
+    
+    // Group 4
+    outpostIntake: v.boolean(),
+    outpostFeed: v.boolean(),
+    
+    // Group 5
+    shootOnTheMove: v.boolean(),
+    shooterType: v.string(), // "Dumper", "Turret", "Misc"
+    shootingPaths: v.optional(v.number()), // Number of shooting paths (1-5, or undefined for none/other)
+    
+    // Group 6
+    bps: v.number(), // Balls Per Second
+    hopperSize: v.number(),
+    
+    // Group 7
     drivetrain: v.string(),
+    gearing: v.optional(v.string()),
+    
+    // Meta
     pitLocation: v.string(),
     notes: v.string(),
     scoutedBy: v.id("users"),
@@ -66,17 +89,16 @@ export default defineSchema({
 
     // Scoring
     auto: v.object({
-      coral: v.array(v.number()), // Indices correspond to levels 1-4
-      algae: v.array(v.number()), // [high, low]
+      ballsShot: v.number(),
+      climb: v.string(), // "none", "L1"
       notes: v.string(),
     }),
     teleop: v.object({
-      coral: v.array(v.number()),
-      algae: v.array(v.number()),
+      ballsShot: v.number(),
       notes: v.string(),
     }),
     endgame: v.object({
-      climb: v.string(), // "none", "low", "high"
+      climb: v.string(), // "none", "L1", "L2", "L3"
       notes: v.string(),
     }),
 
@@ -86,7 +108,8 @@ export default defineSchema({
     tags: v.array(v.string()), // "fast", "tippy", etc.
     
     submittedAt: v.number(),
-  }).index("by_match_team", ["eventId", "matchNumber", "teamNumber"]),
+  }).index("by_match_team", ["eventId", "matchNumber", "teamNumber"])
+    .index("by_event_team", ["eventId", "teamNumber"]),
 
   // Pit Map
   pitLocations: defineTable({

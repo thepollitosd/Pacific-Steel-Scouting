@@ -46,3 +46,13 @@ export const respondToRequest = mutation({
     });
   },
 });
+
+export const deleteRequest = mutation({
+  args: {
+    requestId: v.id("requests"),
+  },
+  handler: async (ctx, args) => {
+    await requireRole(ctx, ["Drive Team", "Admin"]);
+    await ctx.db.delete(args.requestId);
+  },
+});

@@ -1,5 +1,6 @@
-import { internalMutation, query } from "./_generated/server";
+import { internalMutation, query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { requireRole } from "./users";
 
 export const getActiveEvent = query({
   args: {},
@@ -88,5 +89,36 @@ export const saveImportedEvent = internalMutation({
         });
       }
     }
+  },
+});
+export const resetAllData = mutation({
+  args: {},
+  handler: async (ctx) => {
+    await requireRole(ctx, ["Admin"]);
+
+    // Delete all records from scouting tables
+    const matchScouting = await ctx.db.query("matchScouting").collect();
+    for (const doc of matchScouting) { await ctx.db.delete(doc._id); }
+
+    const pitScouting = await ctx.db.query("pitScouting").collect();
+    for (const doc of pitScouting) { await ctx.db.delete(doc._id); }
+
+    const pitLocations = await ctx.db.query("pitLocations").collect();
+    for (const doc of pitLocations) { await ctx.db.delete(doc._id); }
+
+    const pickLists = await ctx.db.query("pickLists").collect();
+    for (const doc of pickLists) { await ctx.db.delete(doc._id); }
+
+    const requests = await ctx.db.query("requests").collect();
+    for (const doc of requests) { await ctx.db.delete(doc._id); }
+
+    const matches = await ctx.db.query("matches").collect();
+    for (const doc of matches) { await ctx.db.delete(doc._id); }
+
+    const teams = await ctx.db.query("teams").collect();
+    for (const doc of teams) { await ctx.db.delete(doc._id); }
+
+    const events = await ctx.db.query("events").collect();
+    for (const doc of events) { await ctx.db.delete(doc._id); }
   },
 });
