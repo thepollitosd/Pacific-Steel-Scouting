@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Input } from "@/components/ui/input";
-import { Search, X, Crosshair, Asterisk, CirclePile, Tally1, Tally2, Tally3, Tally4, Tally5 } from "lucide-react";
+import { Search, X, Crosshair, Asterisk, CirclePile, Tally1, Tally2, Tally3, Tally4, Tally5, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useUIStore } from "../store/use-ui-store";
 import { useStatboticsEvent } from "../hooks/use-statbotics";
@@ -15,7 +15,7 @@ export function TeamList() {
     api.pitScouting.getPitScoutingForEvent,
     activeEvent?._id ? { eventId: activeEvent._id } : "skip"
   );
-  const { data: statboticsData } = useStatboticsEvent(activeEvent?.key);
+  const { data: statboticsData, loading: statboticsLoading } = useStatboticsEvent(activeEvent?.key);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"number" | "epa">("number");
   const [scoutFilter, setScoutFilter] = useState<"all" | "scouted" | "unscouted">("all");
@@ -54,7 +54,14 @@ export function TeamList() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">Teams ({filtered.length})</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold tracking-tight">Teams ({filtered.length})</h1>
+          {statboticsLoading && (
+            <span title="Loading latest EPA data...">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </span>
+          )}
+        </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
             <SelectTrigger className="w-full sm:w-[140px] bg-background">
@@ -203,28 +210,35 @@ export function TeamList() {
               {/* Statbotics Info Modal */}
               {(() => {
                 const sData = statboticsData?.find(s => s.team === selectedTeam.number);
-                if (!sData) return null;
+                if (!sData && !statboticsLoading) return null;
                 return (
                   <div className="p-4 rounded-xl bg-muted/50 border">
-                    <h3 className="font-semibold mb-2">Statbotics Expected Points Added</h3>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Total EPA:</span>
-                        <span className="font-bold text-blue-500">{sData.epa?.total_points?.mean?.toFixed(1) || "N/A"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Auto EPA:</span>
-                        <span className="font-semibold">{sData.epa?.auto_points?.mean?.toFixed(1) || "N/A"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Teleop EPA:</span>
-                        <span className="font-semibold">{sData.epa?.teleop_points?.mean?.toFixed(1) || "N/A"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Endgame EPA:</span>
-                        <span className="font-semibold">{sData.epa?.endgame_points?.mean?.toFixed(1) || "N/A"}</span>
-                      </div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-semibold">Statbotics Expected Points Added</h3>
+                      {statboticsLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                     </div>
+                    {sData ? (
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Total EPA:</span>
+                          <span className="font-bold text-blue-500">{sData.epa?.total_points?.mean?.toFixed(1) || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Auto EPA:</span>
+                          <span className="font-semibold">{sData.epa?.auto_points?.mean?.toFixed(1) || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Teleop EPA:</span>
+                          <span className="font-semibold">{sData.epa?.teleop_points?.mean?.toFixed(1) || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Endgame EPA:</span>
+                          <span className="font-semibold">{sData.epa?.endgame_points?.mean?.toFixed(1) || "N/A"}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">Loading EPA data...</div>
+                    )}
                   </div>
                 );
               })()}

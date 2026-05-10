@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router";
 import { useQuery, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { ArrowLeft, Clock, Video, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Clock, Video, Image as ImageIcon, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useStatboticsTeamYear } from "../hooks/use-statbotics";
 
@@ -61,10 +61,15 @@ export function TeamDetail() {
         <div className="md:col-span-1 space-y-6 h-fit">
           {/* Statbotics Card */}
           <div className="p-6 rounded-2xl border bg-card shadow-sm">
-            <h2 className="text-xl font-bold mb-4 text-blue-500">Statbotics EPA</h2>
-            {statboticsLoading ? (
-              <div className="text-sm text-muted-foreground">Loading...</div>
-            ) : statboticsData ? (
+            <div className="flex items-center gap-2 mb-4">
+              <h2 className="text-xl font-bold text-blue-500">Statbotics EPA</h2>
+              {statboticsLoading && (
+                <span title="Loading latest EPA data...">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </span>
+              )}
+            </div>
+            {statboticsData ? (
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between items-center bg-blue-500/10 p-2 rounded-lg">
                   <span className="text-muted-foreground font-semibold">Total EPA:</span>
