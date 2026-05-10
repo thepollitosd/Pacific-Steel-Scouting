@@ -32,7 +32,9 @@ import {
   WifiOff,
   HelpCircle,
   ShieldCheck,
-  FileText
+  FileText,
+  Target,
+  Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +58,8 @@ import { NotFound } from "./pages/not-found";
 import { HelpSupport } from "./pages/help";
 import { PrivacyPolicy } from "./pages/privacy";
 import { TermsOfService } from "./pages/terms";
+import { MatchStrategy } from "./pages/match-strategy";
+import { DataExport } from "./pages/data-export";
 
 function NavItem({ icon: Icon, label, href }: { icon: any, label: string, href: string }) {
   const navigate = useNavigate();
@@ -190,7 +194,9 @@ function RootLayout() {
   const defaultLandingPage = useUIStore((state) => state.defaultLandingPage);
   const { isAuthenticated, isLoading } = useConvexAuth();
   const user = useQuery(api.users.current);
-  const isAdmin = user?.role === "Admin";
+  const userRole = user?.role || "Scout";
+  const isAdmin = userRole === "Admin";
+  const isStrategist = userRole === "Strategist";
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -223,6 +229,8 @@ function RootLayout() {
           <NavItem icon={ClipboardList} label="Team List" href="/teams" />
           <NavItem icon={ListOrdered} label="Pick Lists" href="/pick-lists" />
           <NavItem icon={Zap} label="Drive Team Hub" href="/hub" />
+          <NavItem icon={Target} label="Match Strategy" href="/strategy" />
+          <NavItem icon={Download} label="Data Export" href="/export" />
           <NavItem icon={Paintbrush} label="Customization" href="/customization" />
         </nav>
         <div className="border-t p-2 space-y-1">
@@ -243,9 +251,27 @@ function RootLayout() {
       {/* Bottom Nav for Mobile */}
       <nav className="flex md:hidden border-t bg-background/95 backdrop-blur-sm h-[calc(4rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] items-center justify-around shrink-0 touch-none">
         <MobileNavItem icon={LayoutDashboard} label="Dash" href="/" />
-        <MobileNavItem icon={Search} label="Scout" href="/scouting" />
-        <MobileNavItem icon={Users} label="Pit" href="/pit" />
-        <MobileNavItem icon={MapIcon} label="Map" href="/map" />
+        
+        {isAdmin ? (
+          <>
+            <MobileNavItem icon={Zap} label="Hub" href="/hub" />
+            <MobileNavItem icon={Settings} label="Setup" href="/setup" />
+            <MobileNavItem icon={Paintbrush} label="Colors" href="/customization" />
+          </>
+        ) : isStrategist ? (
+          <>
+            <MobileNavItem icon={Target} label="Strategy" href="/strategy" />
+            <MobileNavItem icon={ListOrdered} label="Picks" href="/pick-lists" />
+            <MobileNavItem icon={Download} label="Export" href="/export" />
+          </>
+        ) : (
+          <>
+            <MobileNavItem icon={Search} label="Scout" href="/scouting" />
+            <MobileNavItem icon={Users} label="Pit" href="/pit" />
+            <MobileNavItem icon={MapIcon} label="Map" href="/map" />
+          </>
+        )}
+        
         <MobileNavItem icon={ClipboardList} label="Teams" href="/teams" />
       </nav>
 
@@ -270,6 +296,8 @@ const router = createBrowserRouter([
       { path: "pick-lists", element: <PicklistHome /> },
       { path: "pick-lists/edit", element: <PickLists /> },
       { path: "hub", element: <DriveTeamHub /> },
+      { path: "strategy", element: <MatchStrategy /> },
+      { path: "export", element: <DataExport /> },
       { path: "setup", element: <EventSetup /> },
       { path: "customization", element: <Customization /> },
       { path: "help", element: <HelpSupport /> },
