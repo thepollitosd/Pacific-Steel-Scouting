@@ -156,7 +156,7 @@ function TopHeader() {
           {getPageTitle(location.pathname)}
         </h2>
       </div>
-      
+
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
         <form onSubmit={handleSearch} className="hidden sm:block relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -174,11 +174,11 @@ function TopHeader() {
             <Button variant="ghost" size="icon" className="h-9 w-9">
               {isOnline ? <Wifi className="h-4 w-4 text-green-500" /> : <WifiOff className="h-4 w-4 text-destructive" />}
             </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-9 w-9" 
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
               <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -227,26 +227,26 @@ function RootLayout() {
         <div className="flex h-14 items-center border-b px-4 font-bold tracking-tight">
           {isSidebarOpen ? (
             <>
-              <Zap className="h-5 w-5 text-primary mr-2 shrink-0" />
-              <span className="truncate flex-1">Pacific Scout 2026</span>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => toggleSidebar()} 
+              <img src="/logo.svg" alt="5025 Logo" className="h-12 w-12 mr-2 shrink-0" />
+              <span className="truncate flex-1">Pacific Scout</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => toggleSidebar()}
                 className="h-8 w-8"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
             </>
           ) : (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => toggleSidebar()} 
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => toggleSidebar()}
               className="h-10 w-10 mx-auto"
               title="Expand Sidebar"
             >
-              <Zap className="h-5 w-5 text-primary" />
+              <img src="/logo.svg" alt="5025 Logo" className="h-10 w-10" />
             </Button>
           )}
         </div>
@@ -281,7 +281,7 @@ function RootLayout() {
       {/* Bottom Nav for Mobile */}
       <nav className="flex md:hidden border-t bg-background/95 backdrop-blur-sm h-[calc(4rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] items-center justify-around shrink-0 touch-none">
         <MobileNavItem icon={LayoutDashboard} label="Dash" href="/" />
-        
+
         {isAdmin ? (
           <>
             <MobileNavItem icon={Zap} label="Hub" href="/hub" />
@@ -301,7 +301,7 @@ function RootLayout() {
             <MobileNavItem icon={MapIcon} label="Map" href="/map" />
           </>
         )}
-        
+
         <MobileNavItem icon={ClipboardList} label="Teams" href="/teams" />
       </nav>
 

@@ -38,18 +38,18 @@ export function SignIn() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center space-y-2 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            <Zap className="h-6 w-6 text-primary" />
+          <div className="flex h-24 w-24 items-center justify-center rounded-xl">
+            <img src="/logo.svg" alt="5025 Logo" className="h-24 w-24" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">
-            {step === "signIn" ? "Welcome back to Team 5025" : "Create an account for Team 5025"}
+            {step === "signIn" ? "Welcome back" : "Create an account"}
           </h1>
           <p className="text-sm text-muted-foreground">
             {!isConvexConfigured ? (
               <span className="text-destructive font-semibold">Backend disconnected. Please run the setup commands.</span>
             ) : step === "signIn"
               ? "Enter your credentials to access the hub"
-              : "Sign up to start scouting"}
+              : "Sign up to get started"}
           </p>
         </div>
 
