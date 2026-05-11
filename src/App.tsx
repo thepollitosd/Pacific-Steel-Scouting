@@ -36,7 +36,12 @@ import {
   Download,
   PenTool,
   FileText,
-  ChevronLeft
+  ChevronLeft,
+  Monitor,
+  MessageSquare,
+  History,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +68,9 @@ import { TermsOfService } from "./pages/terms";
 import { MatchStrategy } from "./pages/match-strategy";
 import { DataExport } from "./pages/data-export";
 import { Whiteboard } from "./pages/whiteboard";
+import { PitDisplay } from "./pages/pit-display";
+import { DriverFeedback } from "./pages/driver-feedback";
+import { MatchHistory } from "./pages/match-history";
 
 function NavItem({ icon: Icon, label, href }: { icon: any, label: string, href: string }) {
   const navigate = useNavigate();
@@ -203,6 +211,9 @@ function RootLayout() {
   const user = useQuery(api.users.current);
   const userRole = user?.role || "Scout";
   const isAdmin = userRole === "Admin";
+  const [scoutingOpen, setScoutingOpen] = useState(true);
+  const [strategyOpen, setStrategyOpen] = useState(true);
+  const [dataOpen, setDataOpen] = useState(true);
   const isStrategist = userRole === "Strategist";
   const navigate = useNavigate();
   const location = useLocation();
@@ -250,17 +261,99 @@ function RootLayout() {
             </Button>
           )}
         </div>
-        <nav className="flex-1 space-y-1 p-2 overflow-y-auto">
+        <nav className="flex-1 space-y-2 p-2 overflow-y-auto">
           <NavItem icon={LayoutDashboard} label="Dashboard" href="/" />
-          <NavItem icon={Search} label="Match Scouting" href="/scouting" />
-          <NavItem icon={Users} label="Pit Scouting" href="/pit" />
-          <NavItem icon={MapIcon} label="Pit Map" href="/map" />
-          <NavItem icon={ClipboardList} label="Team List" href="/teams" />
-          <NavItem icon={ListOrdered} label="Pick Lists" href="/pick-lists" />
-          <NavItem icon={Zap} label="Drive Team Hub" href="/hub" />
-          <NavItem icon={Target} label="Match Strategy" href="/strategy" />
-          <NavItem icon={PenTool} label="Whiteboard" href="/whiteboard" />
-          <NavItem icon={Download} label="Data Export" href="/export" />
+          
+          {/* Scouting Group */}
+          <div>
+            <button
+              onClick={() => setScoutingOpen(!scoutingOpen)}
+              className={cn(
+                "flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                !isSidebarOpen && "justify-center"
+              )}
+            >
+              {isSidebarOpen ? <span>Scouting</span> : <Search className="h-4 w-4" />}
+              {isSidebarOpen && (scoutingOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />)}
+            </button>
+            {scoutingOpen && isSidebarOpen && (
+              <div className="mt-1 ml-2 space-y-1">
+                <NavItem icon={Search} label="Match Scouting" href="/scouting" />
+                <NavItem icon={Users} label="Pit Scouting" href="/pit" />
+                <NavItem icon={MapIcon} label="Pit Map" href="/map" />
+              </div>
+            )}
+            {scoutingOpen && !isSidebarOpen && (
+              <div className="space-y-1">
+                <NavItem icon={Search} label="Match" href="/scouting" />
+                <NavItem icon={Users} label="Pit" href="/pit" />
+                <NavItem icon={MapIcon} label="Map" href="/map" />
+              </div>
+            )}
+          </div>
+
+          {/* Strategy Group */}
+          <div>
+            <button
+              onClick={() => setStrategyOpen(!strategyOpen)}
+              className={cn(
+                "flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                !isSidebarOpen && "justify-center"
+              )}
+            >
+              {isSidebarOpen ? <span>Strategy</span> : <Zap className="h-4 w-4" />}
+              {isSidebarOpen && (strategyOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />)}
+            </button>
+            {strategyOpen && isSidebarOpen && (
+              <div className="mt-1 ml-2 space-y-1">
+                <NavItem icon={Zap} label="Drive Team Hub" href="/hub" />
+                <NavItem icon={MessageSquare} label="Driver Feedback" href="/driver-feedback" />
+                <NavItem icon={History} label="Match History" href="/match-history" />
+                <NavItem icon={Target} label="Match Strategy" href="/strategy" />
+                <NavItem icon={PenTool} label="Whiteboard" href="/whiteboard" />
+                <NavItem icon={Monitor} label="Pit Display" href="/pit-display" />
+              </div>
+            )}
+            {strategyOpen && !isSidebarOpen && (
+              <div className="space-y-1">
+                <NavItem icon={Zap} label="Hub" href="/hub" />
+                <NavItem icon={MessageSquare} label="Feedback" href="/driver-feedback" />
+                <NavItem icon={History} label="History" href="/match-history" />
+                <NavItem icon={Target} label="Strategy" href="/strategy" />
+                <NavItem icon={PenTool} label="Board" href="/whiteboard" />
+                <NavItem icon={Monitor} label="Display" href="/pit-display" />
+              </div>
+            )}
+          </div>
+
+          {/* Data Group */}
+          <div>
+            <button
+              onClick={() => setDataOpen(!dataOpen)}
+              className={cn(
+                "flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                !isSidebarOpen && "justify-center"
+              )}
+            >
+              {isSidebarOpen ? <span>Data</span> : <ClipboardList className="h-4 w-4" />}
+              {isSidebarOpen && (dataOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />)}
+            </button>
+            {dataOpen && isSidebarOpen && (
+              <div className="mt-1 ml-2 space-y-1">
+                <NavItem icon={ClipboardList} label="Team List" href="/teams" />
+                <NavItem icon={ListOrdered} label="Pick Lists" href="/pick-lists" />
+                <NavItem icon={Download} label="Data Export" href="/export" />
+              </div>
+            )}
+            {dataOpen && !isSidebarOpen && (
+              <div className="space-y-1">
+                <NavItem icon={ClipboardList} label="Teams" href="/teams" />
+                <NavItem icon={ListOrdered} label="Picks" href="/pick-lists" />
+                <NavItem icon={Download} label="Export" href="/export" />
+              </div>
+            )}
+          </div>
+
           <NavItem icon={Paintbrush} label="Customization" href="/customization" />
         </nav>
         <div className="border-t p-2 space-y-1">
@@ -325,7 +418,9 @@ const router = createBrowserRouter([
       { path: "teams/:teamNumber", element: <TeamDetail /> },
       { path: "pick-lists", element: <PicklistHome /> },
       { path: "pick-lists/edit", element: <PickLists /> },
-      { path: "hub", element: <DriveTeamHub /> },
+       { path: "hub", element: <DriveTeamHub /> },
+      { path: "driver-feedback", element: <DriverFeedback /> },
+      { path: "match-history", element: <MatchHistory /> },
       { path: "strategy", element: <MatchStrategy /> },
       { path: "whiteboard", element: <Whiteboard /> },
       { path: "export", element: <DataExport /> },
@@ -336,6 +431,10 @@ const router = createBrowserRouter([
       { path: "terms", element: <TermsOfService /> },
       { path: "*", element: <NotFound /> },
     ],
+  },
+  {
+    path: "/pit-display",
+    element: <PitDisplay />,
   },
 ]);
 

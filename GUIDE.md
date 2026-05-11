@@ -15,6 +15,9 @@ Welcome to the official user guide for **Pacific Scout 2026**, the ultimate comp
     - [Team List](#team-list)
     - [Pick Lists](#pick-lists)
     - [Drive Team Hub](#drive-team-hub)
+    - [Driver Feedback](#driver-feedback)
+    - [Match History](#match-history)
+    - [Pit Display](#pit-display)
     - [Match Strategy Predictor](#match-strategy-predictor)
     - [Strategy Whiteboard](#strategy-whiteboard)
     - [Data Export](#data-export)
@@ -85,6 +88,23 @@ A real-time display designed for the drive team in the pits or queuing area.
 - Shows upcoming match schedule.
 - Displays alliance partners and opponents with quick stat summaries.
 - Alerts for immediate strategy needs.
+
+### Driver Feedback
+A quick form for the drive team to fill out immediately after a match.
+- **Drivetrain Rating**: Rate the performance on a 1-5 scale.
+- **Intake Issues**: Flag if the intake failed or had issues.
+- **Notes**: Add general notes about robot performance or match events.
+
+### Match History
+A detailed record of Team 5025's matches.
+- **Scout Data**: View objective data recorded by scouters (Auto/Teleop scoring, climbs).
+- **Driver Feedback**: View subjective data from the drive team (drivetrain feel, intake issues).
+
+### Pit Display
+A full-screen Kiosk mode designed for a large monitor in the pit.
+- Shows next match countdown.
+- Displays active requests from the Drive Team Hub.
+- Shows current event rankings.
 
 ### Match Strategy Predictor
 Simulate upcoming matches using real data.

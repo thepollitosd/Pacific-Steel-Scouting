@@ -144,4 +144,14 @@ export default defineSchema({
     response: v.optional(v.string()),
     createdAt: v.number(),
   }).index("by_event_status", ["eventId", "status"]),
+
+  driverFeedback: defineTable({
+    eventId: v.id("events"),
+    matchNumber: v.number(),
+    drivetrainRating: v.number(),
+    intakeIssues: v.boolean(),
+    intakeNotes: v.string(),
+    generalNotes: v.string(),
+    submittedAt: v.number(),
+  }).index("by_event_match", ["eventId", "matchNumber"]),
 });

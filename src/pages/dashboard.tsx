@@ -5,16 +5,23 @@ export function Dashboard() {
   const activeEvent = useQuery(api.events.getActiveEvent);
   const requests = useQuery(api.driveTeamHub.getRequests, { eventId: activeEvent?._id });
   const teams = useQuery(api.teams.getByEvent, { eventId: activeEvent?._id });
+  const user = useQuery(api.users.current);
+  const userRole = user?.role || "Scout";
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-baseline justify-between gap-4">
         <h1 className="text-4xl font-bold tracking-tight">Dashboard</h1>
-        {activeEvent && (
-          <span className="text-sm font-medium text-primary uppercase bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
-            {activeEvent.name}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full border">
+            Role: {userRole}
           </span>
-        )}
+          {activeEvent && (
+            <span className="text-sm font-medium text-primary uppercase bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+              {activeEvent.name}
+            </span>
+          )}
+        </div>
       </div>
 
       {!activeEvent ? (
