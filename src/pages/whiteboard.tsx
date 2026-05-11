@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Eraser, PenTool, Plus, X, Save, Film, Trash2 } from "lucide-react";
+import { Eraser, PenTool, Plus, X, Film, Trash2, Undo, Redo } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,6 +38,10 @@ export function Whiteboard() {
   const [notes, setNotes] = useState<Record<Phase, string>>(currentFrame.notes);
   const [robots, setRobots] = useState<Record<Phase, Robot[]>>(currentFrame.robots);
   
+  // Undo/Redo state
+  const [canvasHistory, setCanvasHistory] = useState<Record<string, string[]>>({});
+  const [canvasHistoryIndex, setCanvasHistoryIndex] = useState<Record<string, number>>({});
+
   // Dragging state
   const [draggingRobot, setDraggingRobot] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -78,6 +82,13 @@ export function Whiteboard() {
     }
     setRobots(currentFrame.robots);
     setNotes(currentFrame.notes);
+    
+    // Initialize history if not present
+    const key = `${currentFrameId}_${phase}`;
+    if (!canvasHistory[key]) {
+      setCanvasHistory(prev => ({ ...prev, [key]: [dataUrl || ""] }));
+      setCanvasHistoryIndex(prev => ({ ...prev, [key]: 0 }));
+    }
   }, [currentFrameId, phase]);
 
   useEffect(() => {
@@ -186,11 +197,76 @@ export function Whiteboard() {
       const canvas = getCanvas();
       if (canvas) {
         const dataUrl = canvas.toDataURL();
+        
+        // Update history
+        const key = `${currentFrameId}_${phase}`;
+        const currentHist = canvasHistory[key] || [];
+        const currentIndex = canvasHistoryIndex[key] ?? -1;
+        
+        const newHist = [...currentHist.slice(0, currentIndex + 1), dataUrl];
+        setCanvasHistory({ ...canvasHistory, [key]: newHist });
+        setCanvasHistoryIndex({ ...canvasHistoryIndex, [key]: newHist.length - 1 });
+        
         const updatedCanvases = { ...currentFrame.canvases, [phase]: dataUrl };
         updateFrameData({ canvases: updatedCanvases });
       }
     }
     setDraggingRobot(null);
+  };
+
+  const undo = () => {
+    const key = `${currentFrameId}_${phase}`;
+    const currentIndex = canvasHistoryIndex[key] ?? -1;
+    if (currentIndex > 0) {
+      const newIndex = currentIndex - 1;
+      const dataUrl = canvasHistory[key][newIndex];
+      
+      setCanvasHistoryIndex({ ...canvasHistoryIndex, [key]: newIndex });
+      
+      const canvas = getCanvas();
+      const ctx = canvas?.getContext("2d");
+      if (canvas && ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (dataUrl) {
+          const img = new Image();
+          img.src = dataUrl;
+          img.onload = () => {
+            ctx.drawImage(img, 0, 0);
+          };
+        }
+      }
+      
+      const updatedCanvases = { ...currentFrame.canvases, [phase]: dataUrl };
+      updateFrameData({ canvases: updatedCanvases });
+    }
+  };
+
+  const redo = () => {
+    const key = `${currentFrameId}_${phase}`;
+    const currentIndex = canvasHistoryIndex[key] ?? -1;
+    const currentHist = canvasHistory[key] || [];
+    if (currentIndex < currentHist.length - 1) {
+      const newIndex = currentIndex + 1;
+      const dataUrl = currentHist[newIndex];
+      
+      setCanvasHistoryIndex({ ...canvasHistoryIndex, [key]: newIndex });
+      
+      const canvas = getCanvas();
+      const ctx = canvas?.getContext("2d");
+      if (canvas && ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (dataUrl) {
+          const img = new Image();
+          img.src = dataUrl;
+          img.onload = () => {
+            ctx.drawImage(img, 0, 0);
+          };
+        }
+      }
+      
+      const updatedCanvases = { ...currentFrame.canvases, [phase]: dataUrl };
+      updateFrameData({ canvases: updatedCanvases });
+    }
   };
 
   const handleRobotPointerDown = (e: React.MouseEvent | React.TouchEvent, robot: Robot) => {
@@ -213,6 +289,15 @@ export function Whiteboard() {
     if (canvas && ctx) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const dataUrl = canvas.toDataURL();
+      
+      // Add to history
+      const key = `${currentFrameId}_${phase}`;
+      const currentHist = canvasHistory[key] || [];
+      const currentIndex = canvasHistoryIndex[key] ?? -1;
+      const newHist = [...currentHist.slice(0, currentIndex + 1), dataUrl];
+      setCanvasHistory({ ...canvasHistory, [key]: newHist });
+      setCanvasHistoryIndex({ ...canvasHistoryIndex, [key]: newHist.length - 1 });
+
       const updatedCanvases = { ...currentFrame.canvases, [phase]: dataUrl };
       const updatedRobots = { ...robots, [phase]: [] };
       setRobots(updatedRobots);
@@ -294,6 +379,8 @@ export function Whiteboard() {
       };
       setFrames([resetFrame]);
       setCurrentFrameId("1");
+      setCanvasHistory({});
+      setCanvasHistoryIndex({});
       
       // Clear canvases physically
       [autoCanvasRef, teleopCanvasRef, endgameCanvasRef].forEach(ref => {
@@ -307,6 +394,10 @@ export function Whiteboard() {
       setNotes({ auto: "", teleop: "", endgame: "" });
     }
   };
+
+  const currentKey = `${currentFrameId}_${phase}`;
+  const canUndo = (canvasHistoryIndex[currentKey] ?? 0) > 0;
+  const canRedo = (canvasHistoryIndex[currentKey] ?? 0) < (canvasHistory[currentKey]?.length ?? 1) - 1;
 
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] space-y-4 max-w-7xl mx-auto w-full">
@@ -370,11 +461,24 @@ export function Whiteboard() {
               <Button variant="outline" size="icon" onClick={() => setColor("#ffffff")} className={color === "#ffffff" ? "border-black border-2 dark:border-white" : ""}><div className="w-4 h-4 rounded-full bg-white border border-border" /></Button>
               <Button variant="outline" size="icon" onClick={() => setColor("#000000")} className={color === "#000000" ? "border-white border-2 dark:border-neutral-700" : ""}><div className="w-4 h-4 rounded-full bg-black border border-border" /></Button>
             </div>
+            
             <div className="h-6 w-px bg-border mx-2" />
-            <Button variant="secondary" size="sm" onClick={addRobot}>
+            
+            <div className="flex gap-1">
+              <Button variant="outline" size="sm" onClick={undo} disabled={!canUndo} className="h-8">
+                <Undo className="w-4 h-4 mr-1" /> Undo
+              </Button>
+              <Button variant="outline" size="sm" onClick={redo} disabled={!canRedo} className="h-8">
+                <Redo className="w-4 h-4 mr-1" /> Redo
+              </Button>
+            </div>
+
+            <div className="h-6 w-px bg-border mx-2" />
+            
+            <Button variant="secondary" size="sm" onClick={addRobot} className="h-8">
               <Plus className="w-4 h-4 mr-1 sm:mr-2" /> <span className="hidden sm:inline">Add Robot</span><span className="sm:hidden">Add</span>
             </Button>
-            <Button variant="destructive" size="sm" onClick={clearCanvas} className="ml-auto">
+            <Button variant="destructive" size="sm" onClick={clearCanvas} className="h-8 ml-auto">
               <Eraser className="w-4 h-4 mr-1 sm:mr-2" /> <span className="hidden sm:inline">Clear Canvas</span><span className="sm:hidden">Clear</span>
             </Button>
           </div>
@@ -425,7 +529,7 @@ export function Whiteboard() {
                     left: r.x, 
                     top: r.y, 
                     transform: draggingRobot === r.id ? "scale(1.15)" : "scale(1)",
-                    cursor: draggingRobot === r.id ? "grabbing" : "grab",
+                    cursor: draggingRobot === r.id ? "grab" : "grab",
                     backgroundColor: r.color
                   }}
                   onMouseDown={(e) => handleRobotPointerDown(e, r)}

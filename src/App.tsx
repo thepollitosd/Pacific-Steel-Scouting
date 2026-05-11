@@ -25,6 +25,7 @@ import {
   Settings,
   Users,
   Paintbrush,
+  Film,
   Moon,
   Sun,
   LogOut,
@@ -73,6 +74,7 @@ import { PitDisplay } from "./pages/pit-display";
 import { DriverFeedback } from "./pages/driver-feedback";
 import { MatchHistory } from "./pages/match-history";
 import { AllianceSelection } from "./pages/alliance-selection";
+import { MatchReplay } from "./pages/match-replay";
 
 function NavItem({ icon: Icon, label, href }: { icon: any, label: string, href: string }) {
   const navigate = useNavigate();
@@ -313,6 +315,7 @@ function RootLayout() {
                 <NavItem icon={History} label="Match History" href="/match-history" />
                 <NavItem icon={Target} label="Match Strategy" href="/strategy" />
                 <NavItem icon={PenTool} label="Whiteboard" href="/whiteboard" />
+                <NavItem icon={Film} label="Match Replay" href="/replay" />
                 <NavItem icon={Monitor} label="Pit Display" href="/pit-display" />
                 <NavItem icon={Trophy} label="Alliance Selector" href="/alliance-selection" />
               </div>
@@ -324,6 +327,7 @@ function RootLayout() {
                 <NavItem icon={History} label="History" href="/match-history" />
                 <NavItem icon={Target} label="Strategy" href="/strategy" />
                 <NavItem icon={PenTool} label="Board" href="/whiteboard" />
+                <NavItem icon={Film} label="Replay" href="/replay" />
                 <NavItem icon={Monitor} label="Display" href="/pit-display" />
                 <NavItem icon={Trophy} label="Selector" href="/alliance-selection" />
               </div>
@@ -427,6 +431,7 @@ const router = createBrowserRouter([
       { path: "match-history", element: <MatchHistory /> },
       { path: "strategy", element: <MatchStrategy /> },
       { path: "whiteboard", element: <Whiteboard /> },
+      { path: "replay", element: <MatchReplay /> },
       { path: "alliance-selection", element: <AllianceSelection /> },
       { path: "export", element: <DataExport /> },
       { path: "setup", element: <EventSetup /> },

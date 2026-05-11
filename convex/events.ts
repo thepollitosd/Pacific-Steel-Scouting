@@ -91,6 +91,15 @@ export const saveImportedEvent = internalMutation({
     }
   },
 });
+export const listMatches = query({
+  args: { eventId: v.id("events") },
+  handler: async (ctx, args) => {
+    return await ctx.db.query("matches")
+      .withIndex("by_event_match", (q) => q.eq("eventId", args.eventId))
+      .collect();
+  },
+});
+
 export const resetAllData = mutation({
   args: {},
   handler: async (ctx) => {
