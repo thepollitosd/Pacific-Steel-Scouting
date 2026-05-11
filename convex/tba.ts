@@ -88,3 +88,21 @@ export const getTeamMedia = action({
     return media;
   },
 });
+
+export const getRankings = action({
+  args: { eventKey: v.string() },
+  handler: async (ctx, args) => {
+    const apiKey = process.env.TBA_API_KEY;
+    if (!apiKey) throw new Error("TBA_API_KEY environment variable is not set");
+
+    const headers = {
+      "X-TBA-Auth-Key": apiKey,
+    };
+
+    const res = await fetch(`https://www.thebluealliance.com/api/v3/event/${args.eventKey}/rankings`, { headers });
+    if (!res.ok) throw new Error("Failed to fetch rankings from TBA");
+    
+    const data = await res.json();
+    return data.rankings || [];
+  },
+});

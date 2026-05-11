@@ -102,9 +102,9 @@ A detailed record of Team 5025's matches.
 
 ### Pit Display
 A full-screen Kiosk mode designed for a large monitor in the pit.
-- Shows next match countdown.
-- Displays active requests from the Drive Team Hub.
-- Shows current event rankings.
+- **Active Requests**: Displays active requests from the Drive Team Hub.
+- **Last Match**: Shows info about the last match for Team 5025, including driver rating and scouting analysis.
+- **Rankings**: Shows current event rankings fetched from The Blue Alliance.
 
 ### Match Strategy Predictor
 Simulate upcoming matches using real data.
