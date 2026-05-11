@@ -1,7 +1,7 @@
 # Pacific Scout 2026
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
 ![Tech Stack](https://img.shields.io/badge/tech-Vite%20%7C%20React%20%7C%20Convex-blueviolet)
 
 **Pacific Scout** is a high-performance, next-generation scouting and strategy platform designed for FIRST Robotics Competition (FRC) teams. Built to operate flawlessly in the chaotic environment of competition events, the system provides real-time data ingestion, deep analytics, and actionable match strategy insights.
@@ -12,11 +12,12 @@
 
 *   **Match & Pit Scouting:** Mobile-optimized, rapid-entry forms for scouting robots on the field and in the pits.
 *   **Tactical Drive Team Hub:** Real-time dashboards allowing drive coaches to analyze alliance compositions and formulate winning strategies.
-*   **Match Predictor Simulator:** Drag-and-drop alliance builder that aggregates scouting data to project scores and compare strengths.
+*   **Alliance Selection Simulator:** Advanced serpentine draft simulator with support for captain-picking and seed-shifting logic.
+*   **Strategy Whiteboard with Frames**: Multi-phase drawing canvas with movable robot tokens and frame-by-frame snapshot saving.
+*   **Scouter Leaderboard**: Gamified ranking system to encourage active participation and high-quality data collection.
 *   **Offline Resilience:** Designed with competition Wi-Fi in mind, featuring local caching and automatic data syncing when connection is restored.
-*   **Data Export & Analytics Center:** Seamless integration with external analysis tools (Tableau, PowerBI) via CSV exports, plus integration hooks for The Blue Alliance (TBA) and Statbotics.
-*   **Interactive Pit Map:** Visual map representation of the pit area for quick scouting navigation.
-*   **Role-Based Access Control:** Secure, robust authentication ensuring only authorized users can modify event setups and system configurations.
+*   **Statbotics Integration**: Real-time EPA (Expected Points Added) integration to compare predicted performance against actual scouting data.
+*   **Data Export & Analytics Center:** Seamless integration with external analysis tools (Tableau, PowerBI) via CSV exports.
 
 ## 🛠️ Technology Stack
 
@@ -27,7 +28,7 @@
 *   **State Management:** Zustand
 *   **Authentication:** Convex Auth (Role-based access)
 *   **Icons:** Lucide React
-*   **Hosting & Analytics:** Vercel
+*   **Hosting:** Vercel
 
 ## 📦 Getting Started
 
@@ -59,6 +60,10 @@
    bun run dev
    ```
    *The app will run locally at `http://localhost:5173`.*
+
+## 📚 Documentation
+
+For a detailed breakdown of formulas, game models, and advanced usage, please refer to the [User Guide](GUIDE.md).
 
 ## 🔒 Security & Roles
 
