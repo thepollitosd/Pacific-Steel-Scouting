@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Target, Shield, Zap, X } from "lucide-react";
+import { Target, Shield, Zap, X, BarChart3 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useStatboticsEvent } from "../hooks/use-statbotics";
 
 export function MatchStrategy() {
   const activeEvent = useQuery(api.events.getActiveEvent);
   const teams = useQuery(api.teams.getByEvent, { eventId: activeEvent?._id });
   const { data: statboticsData } = useStatboticsEvent(activeEvent?.key);
+  const teamAverages = useQuery(api.matchScouting.getTeamAverages, activeEvent ? { eventId: activeEvent._id } : "skip");
 
   const [blueTeams, setBlueTeams] = useState<(number | null)[]>([null, null, null]);
   const [redTeams, setRedTeams] = useState<(number | null)[]>([null, null, null]);
@@ -64,6 +66,20 @@ export function MatchStrategy() {
       </div>
     );
   };
+
+  // Calculate correlation data
+  const correlationData = teams?.map(team => {
+    const epa = getEpa(team.number);
+    const actual = teamAverages?.find(a => a.teamNumber === team.number);
+    return {
+      teamNumber: team.number,
+      teamName: team.name,
+      epa,
+      actual: actual?.avgTotal || 0,
+      diff: (actual?.avgTotal || 0) - epa,
+      matchCount: actual?.matchCount || 0,
+    };
+  }).filter(d => d.matchCount > 0) || [];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -159,6 +175,49 @@ export function MatchStrategy() {
           )}
         </CardContent>
       </Card>
+
+      {/* Statbotics vs Reality Correlation */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <BarChart3 className="w-5 h-5 mr-2 text-primary" />
+            Statbotics vs. Reality Correlation
+          </CardTitle>
+          <CardDescription>Compare predicted EPA with actual scouted performance</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {correlationData.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">No scouted data available yet to compare.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Team</TableHead>
+                  <TableHead>Statbotics EPA</TableHead>
+                  <TableHead>Actual Avg</TableHead>
+                  <TableHead>Difference</TableHead>
+                  <TableHead>Matches</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {correlationData.sort((a, b) => b.actual - a.actual).map((d) => (
+                  <TableRow key={d.teamNumber}>
+                    <TableCell className="font-medium">{d.teamNumber} - {d.teamName}</TableCell>
+                    <TableCell>{d.epa.toFixed(1)}</TableCell>
+                    <TableCell>{d.actual.toFixed(1)}</TableCell>
+                    <TableCell className={d.diff > 0 ? "text-green-500 font-bold" : d.diff < 0 ? "text-red-500 font-bold" : ""}>
+                      {d.diff > 0 ? `+${d.diff.toFixed(1)}` : d.diff.toFixed(1)}
+                    </TableCell>
+                    <TableCell>{d.matchCount}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
+
+export default MatchStrategy;

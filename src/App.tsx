@@ -41,7 +41,8 @@ import {
   MessageSquare,
   History,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Trophy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,6 +72,7 @@ import { Whiteboard } from "./pages/whiteboard";
 import { PitDisplay } from "./pages/pit-display";
 import { DriverFeedback } from "./pages/driver-feedback";
 import { MatchHistory } from "./pages/match-history";
+import { AllianceSelection } from "./pages/alliance-selection";
 
 function NavItem({ icon: Icon, label, href }: { icon: any, label: string, href: string }) {
   const navigate = useNavigate();
@@ -312,6 +314,7 @@ function RootLayout() {
                 <NavItem icon={Target} label="Match Strategy" href="/strategy" />
                 <NavItem icon={PenTool} label="Whiteboard" href="/whiteboard" />
                 <NavItem icon={Monitor} label="Pit Display" href="/pit-display" />
+                <NavItem icon={Trophy} label="Alliance Selector" href="/alliance-selection" />
               </div>
             )}
             {strategyOpen && !isSidebarOpen && (
@@ -322,6 +325,7 @@ function RootLayout() {
                 <NavItem icon={Target} label="Strategy" href="/strategy" />
                 <NavItem icon={PenTool} label="Board" href="/whiteboard" />
                 <NavItem icon={Monitor} label="Display" href="/pit-display" />
+                <NavItem icon={Trophy} label="Selector" href="/alliance-selection" />
               </div>
             )}
           </div>
@@ -423,6 +427,7 @@ const router = createBrowserRouter([
       { path: "match-history", element: <MatchHistory /> },
       { path: "strategy", element: <MatchStrategy /> },
       { path: "whiteboard", element: <Whiteboard /> },
+      { path: "alliance-selection", element: <AllianceSelection /> },
       { path: "export", element: <DataExport /> },
       { path: "setup", element: <EventSetup /> },
       { path: "customization", element: <Customization /> },

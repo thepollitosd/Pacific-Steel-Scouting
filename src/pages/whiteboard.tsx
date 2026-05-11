@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Eraser, PenTool, Plus, X } from "lucide-react";
+import { Eraser, PenTool, Plus, X, Save, Film, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,11 +7,36 @@ import { Textarea } from "@/components/ui/textarea";
 type Phase = "auto" | "teleop" | "endgame";
 type Robot = { id: string, x: number, y: number, number: string, color: string };
 
+type Frame = {
+  id: string;
+  name: string;
+  canvases: Record<Phase, string>; // Data URLs
+  robots: Record<Phase, Robot[]>;
+  notes: Record<Phase, string>;
+};
+
 export function Whiteboard() {
   const [phase, setPhase] = useState<Phase>("auto");
   const [color, setColor] = useState("#3b82f6");
-  const [notes, setNotes] = useState<Record<Phase, string>>({ auto: "", teleop: "", endgame: "" });
-  const [robots, setRobots] = useState<Record<Phase, Robot[]>>({ auto: [], teleop: [], endgame: [] });
+  
+  // State for frames
+  const [frames, setFrames] = useState<Frame[]>(() => {
+    const saved = localStorage.getItem("whiteboard_frames");
+    return saved ? JSON.parse(saved) : [{ 
+      id: "1", 
+      name: "Frame 1", 
+      canvases: { auto: "", teleop: "", endgame: "" },
+      robots: { auto: [], teleop: [], endgame: [] }, 
+      notes: { auto: "", teleop: "", endgame: "" } 
+    }];
+  });
+  const [currentFrameId, setCurrentFrameId] = useState<string>("1");
+
+  // Current active states derived from current frame
+  const currentFrame = frames.find(f => f.id === currentFrameId) || frames[0];
+  
+  const [notes, setNotes] = useState<Record<Phase, string>>(currentFrame.notes);
+  const [robots, setRobots] = useState<Record<Phase, Robot[]>>(currentFrame.robots);
   
   // Dragging state
   const [draggingRobot, setDraggingRobot] = useState<string | null>(null);
@@ -30,6 +55,31 @@ export function Whiteboard() {
     return endgameCanvasRef.current;
   };
 
+  // Save to local storage whenever frames change
+  useEffect(() => {
+    localStorage.setItem("whiteboard_frames", JSON.stringify(frames));
+  }, [frames]);
+
+  // Load canvas data when switching frames or phases
+  useEffect(() => {
+    const canvas = getCanvas();
+    const ctx = canvas?.getContext("2d");
+    const dataUrl = currentFrame.canvases[phase];
+
+    if (canvas && ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (dataUrl) {
+        const img = new Image();
+        img.src = dataUrl;
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0);
+        };
+      }
+    }
+    setRobots(currentFrame.robots);
+    setNotes(currentFrame.notes);
+  }, [currentFrameId, phase]);
+
   useEffect(() => {
     const resizeCanvas = () => {
       const parent = containerRef.current;
@@ -41,7 +91,6 @@ export function Whiteboard() {
       [autoCanvasRef, teleopCanvasRef, endgameCanvasRef].forEach(ref => {
         const canvas = ref.current;
         if (canvas) {
-          // Store image data before resize
           const ctx = canvas.getContext("2d");
           let imgData;
           if (ctx && canvas.width > 0 && canvas.height > 0) {
@@ -105,14 +154,15 @@ export function Whiteboard() {
       e.preventDefault();
       const { x, y } = getCoordinates(e, container);
       
-      // Keep robots within bounds roughly
       const boundedX = Math.max(0, Math.min(x - dragOffset.x, container.clientWidth - 48));
       const boundedY = Math.max(0, Math.min(y - dragOffset.y, container.clientHeight - 48));
 
-      setRobots(prev => ({
-        ...prev,
-        [phase]: prev[phase].map(r => r.id === draggingRobot ? { ...r, x: boundedX, y: boundedY } : r)
-      }));
+      const updatedRobots = {
+        ...robots,
+        [phase]: robots[phase].map(r => r.id === draggingRobot ? { ...r, x: boundedX, y: boundedY } : r)
+      };
+      setRobots(updatedRobots);
+      updateFrameData({ robots: updatedRobots });
       return;
     }
 
@@ -131,12 +181,20 @@ export function Whiteboard() {
   };
 
   const handlePointerUp = () => {
-    setIsDrawing(false);
+    if (isDrawing) {
+      setIsDrawing(false);
+      const canvas = getCanvas();
+      if (canvas) {
+        const dataUrl = canvas.toDataURL();
+        const updatedCanvases = { ...currentFrame.canvases, [phase]: dataUrl };
+        updateFrameData({ canvases: updatedCanvases });
+      }
+    }
     setDraggingRobot(null);
   };
 
   const handleRobotPointerDown = (e: React.MouseEvent | React.TouchEvent, robot: Robot) => {
-    e.stopPropagation(); // Prevent canvas drawing from starting
+    e.stopPropagation();
     const container = containerRef.current;
     if (!container) return;
     
@@ -145,13 +203,21 @@ export function Whiteboard() {
     setDraggingRobot(robot.id);
   };
 
+  const updateFrameData = (data: Partial<Frame>) => {
+    setFrames(prev => prev.map(f => f.id === currentFrameId ? { ...f, ...data } : f));
+  };
+
   const clearCanvas = () => {
     const canvas = getCanvas();
     const ctx = canvas?.getContext("2d");
     if (canvas && ctx) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL();
+      const updatedCanvases = { ...currentFrame.canvases, [phase]: dataUrl };
+      const updatedRobots = { ...robots, [phase]: [] };
+      setRobots(updatedRobots);
+      updateFrameData({ canvases: updatedCanvases, robots: updatedRobots });
     }
-    setRobots(prev => ({ ...prev, [phase]: [] }));
   };
 
   const addRobot = () => {
@@ -164,23 +230,82 @@ export function Whiteboard() {
       x: centerX,
       y: centerY,
       number: "1234",
-      color: color // Inherit selected color
+      color: color
     };
-    setRobots(prev => ({ ...prev, [phase]: [...prev[phase], newRobot] }));
+    const updatedRobots = { ...robots, [phase]: [...robots[phase], newRobot] };
+    setRobots(updatedRobots);
+    updateFrameData({ robots: updatedRobots });
   };
 
   const updateRobotNumber = (id: string, num: string) => {
-    setRobots(prev => ({
-      ...prev,
-      [phase]: prev[phase].map(r => r.id === id ? { ...r, number: num } : r)
-    }));
+    const updatedRobots = {
+      ...robots,
+      [phase]: robots[phase].map(r => r.id === id ? { ...r, number: num } : r)
+    };
+    setRobots(updatedRobots);
+    updateFrameData({ robots: updatedRobots });
   };
 
   const deleteRobot = (id: string) => {
-    setRobots(prev => ({
-      ...prev,
-      [phase]: prev[phase].filter(r => r.id !== id)
-    }));
+    const updatedRobots = {
+      ...robots,
+      [phase]: robots[phase].filter(r => r.id !== id)
+    };
+    setRobots(updatedRobots);
+    updateFrameData({ robots: updatedRobots });
+  };
+
+  const handleNotesChange = (val: string) => {
+    const updatedNotes = { ...notes, [phase]: val };
+    setNotes(updatedNotes);
+    updateFrameData({ notes: updatedNotes });
+  };
+
+  const addFrame = () => {
+    const newId = Math.random().toString(36).substring(7);
+    const newFrame: Frame = {
+      id: newId,
+      name: `Frame ${frames.length + 1}`,
+      canvases: { auto: "", teleop: "", endgame: "" },
+      robots: { auto: [], teleop: [], endgame: [] },
+      notes: { auto: "", teleop: "", endgame: "" }
+    };
+    setFrames([...frames, newFrame]);
+    setCurrentFrameId(newId);
+  };
+
+  const deleteFrame = (id: string) => {
+    if (frames.length === 1) return; // Keep at least one
+    const updatedFrames = frames.filter(f => f.id !== id);
+    setFrames(updatedFrames);
+    if (currentFrameId === id) {
+      setCurrentFrameId(updatedFrames[0].id);
+    }
+  };
+
+  const clearAllFrames = () => {
+    if (confirm("Are you sure you want to clear all frames? This will reset the whiteboard.")) {
+      const resetFrame: Frame = {
+        id: "1",
+        name: "Frame 1",
+        canvases: { auto: "", teleop: "", endgame: "" },
+        robots: { auto: [], teleop: [], endgame: [] },
+        notes: { auto: "", teleop: "", endgame: "" }
+      };
+      setFrames([resetFrame]);
+      setCurrentFrameId("1");
+      
+      // Clear canvases physically
+      [autoCanvasRef, teleopCanvasRef, endgameCanvasRef].forEach(ref => {
+        const canvas = ref.current;
+        const ctx = canvas?.getContext("2d");
+        if (canvas && ctx) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      });
+      setRobots({ auto: [], teleop: [], endgame: [] });
+      setNotes({ auto: "", teleop: "", endgame: "" });
+    }
   };
 
   return (
@@ -199,8 +324,42 @@ export function Whiteboard() {
         </Tabs>
       </div>
 
+      {/* Frames Bar */}
+      <div className="flex flex-wrap gap-2 shrink-0 bg-muted p-2 rounded-lg items-center overflow-x-auto">
+        <Film className="w-4 h-4 text-muted-foreground ml-1 mr-2" />
+        {frames.map((frame) => (
+          <div key={frame.id} className="flex items-center gap-1">
+            <Button
+              variant={currentFrameId === frame.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCurrentFrameId(frame.id)}
+              className="h-8"
+            >
+              {frame.name}
+            </Button>
+            {frames.length > 1 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => deleteFrame(frame.id)}
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            ) }
+          </div>
+        ))}
+        <Button variant="outline" size="sm" onClick={addFrame} className="h-8">
+          <Plus className="w-3 h-3 mr-1" /> Add Frame
+        </Button>
+        <Button variant="destructive" size="sm" onClick={clearAllFrames} className="h-8 ml-auto">
+          <Trash2 className="w-3 h-3 mr-1" /> Clear All
+        </Button>
+      </div>
+
       <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0">
         <div className="flex flex-col gap-2 flex-1 min-h-0 min-w-0">
+          {/* Toolbar */}
           <div className="flex flex-wrap gap-2 shrink-0 bg-muted p-2 rounded-lg items-center overflow-x-auto">
             <div className="flex gap-1 items-center">
               <PenTool className="w-4 h-4 text-muted-foreground ml-1 mr-2" />
@@ -216,7 +375,7 @@ export function Whiteboard() {
               <Plus className="w-4 h-4 mr-1 sm:mr-2" /> <span className="hidden sm:inline">Add Robot</span><span className="sm:hidden">Add</span>
             </Button>
             <Button variant="destructive" size="sm" onClick={clearCanvas} className="ml-auto">
-              <Eraser className="w-4 h-4 mr-1 sm:mr-2" /> <span className="hidden sm:inline">Clear All</span><span className="sm:hidden">Clear</span>
+              <Eraser className="w-4 h-4 mr-1 sm:mr-2" /> <span className="hidden sm:inline">Clear Canvas</span><span className="sm:hidden">Clear</span>
             </Button>
           </div>
 
@@ -301,16 +460,29 @@ export function Whiteboard() {
           </div>
         </div>
 
-        <div className="w-full lg:w-80 flex flex-col gap-2 shrink-0">
-          <h3 className="font-semibold text-lg">{phase.charAt(0).toUpperCase() + phase.slice(1)} Notes</h3>
-          <Textarea 
-            placeholder={`Add your strategy notes for ${phase} here...`}
-            className="flex-1 min-h-[150px] lg:min-h-0 resize-none text-base"
+        {/* Notes Panel */}
+        <div className="w-full lg:w-[320px] bg-card border rounded-xl p-4 flex flex-col space-y-4 shrink-0">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold">Match Notes</h2>
+            <span className="text-xs uppercase font-bold text-muted-foreground bg-muted px-2 py-1 rounded">
+              {phase}
+            </span>
+          </div>
+          
+          <Textarea
+            placeholder={`Type notes for the ${phase} phase here...`}
             value={notes[phase]}
-            onChange={(e) => setNotes(prev => ({ ...prev, [phase]: e.target.value }))}
+            onChange={(e) => handleNotesChange(e.target.value)}
+            className="flex-1 min-h-[200px] lg:min-h-0 text-base"
           />
+          
+          <div className="text-xs text-muted-foreground p-2 bg-muted rounded-md">
+            <p>💡 Tip: Use the color picker to set the path color before drawing.</p>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
+export default Whiteboard;

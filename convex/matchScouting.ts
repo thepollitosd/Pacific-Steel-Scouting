@@ -56,3 +56,34 @@ export const getByTeam = query({
       .collect();
   },
 });
+
+export const getTeamAverages = query({
+  args: { eventId: v.id("events") },
+  handler: async (ctx, args) => {
+    const records = await ctx.db.query("matchScouting")
+      .filter(q => q.eq(q.field("eventId"), args.eventId))
+      .collect();
+      
+    const teamData: Record<number, { ballsShot: number, climbPts: number, count: number }> = {};
+    
+    records.forEach(r => {
+      const team = r.teamNumber;
+      if (!teamData[team]) {
+        teamData[team] = { ballsShot: 0, climbPts: 0, count: 0 };
+      }
+      teamData[team].ballsShot += (r.auto.ballsShot || 0) + (r.teleop.ballsShot || 0);
+      const climbPt = r.endgame.climb === "L3" ? 15 : r.endgame.climb === "L2" ? 10 : r.endgame.climb === "L1" ? 5 : 0;
+      teamData[team].climbPts += climbPt;
+      teamData[team].count += 1;
+    });
+    
+    return Object.entries(teamData).map(([team, data]) => ({
+      teamNumber: parseInt(team),
+      avgBalls: data.ballsShot / data.count,
+      avgClimbPts: data.climbPts / data.count,
+      avgTotal: (data.ballsShot / data.count) + (data.climbPts / data.count),
+      matchCount: data.count,
+    }));
+  },
+});
+

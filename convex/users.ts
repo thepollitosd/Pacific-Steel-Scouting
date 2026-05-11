@@ -46,3 +46,31 @@ export const updateProfile = mutation({
     await ctx.db.patch(userId, { name: args.name });
   },
 });
+
+export const getLeaderboard = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
+    
+    const users = await ctx.db.query("users").collect();
+    const matchScouting = await ctx.db.query("matchScouting").collect();
+    const pitScouting = await ctx.db.query("pitScouting").collect();
+    
+    const leaderboard = users.map(user => {
+      const matchesScouted = matchScouting.filter(m => m.scouterId === user._id).length;
+      const pitsScouted = pitScouting.filter(p => p.scoutedBy === user._id).length;
+      
+      return {
+        _id: user._id,
+        name: user.name || user.email || "Anonymous",
+        matchesScouted,
+        pitsScouted,
+        points: (matchesScouted * 10) + (pitsScouted * 20),
+      };
+    });
+    
+    return leaderboard.sort((a, b) => b.points - a.points);
+  },
+});
+
