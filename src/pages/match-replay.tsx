@@ -387,24 +387,24 @@ export function MatchReplay() {
                     />
                     
                     {/* Match Periods Markers */}
-                    {/* Auto starts at 5s, ends at 25s */}
+                    {/* Auto starts at 8s, ends at 28s */}
                     {duration > 0 && (
                       <>
                         <div 
                           className="absolute top-0 h-full bg-yellow-500/50" 
-                          style={{ left: `${(5 / duration) * 100}%`, width: `${(20 / duration) * 100}%` }}
+                          style={{ left: `${(8 / duration) * 100}%`, width: `${(20 / duration) * 100}%` }}
                           title="Autonomous (20s)"
                         />
-                        {/* Delay starts at 25s, ends at 28s */}
+                        {/* Delay starts at 28s, ends at 32s */}
                         <div 
                           className="absolute top-0 h-full bg-orange-500/50" 
-                          style={{ left: `${(25 / duration) * 100}%`, width: `${(3 / duration) * 100}%` }}
+                          style={{ left: `${(28 / duration) * 100}%`, width: `${(4 / duration) * 100}%` }}
                           title="Delay (3s)"
                         />
-                        {/* Teleop starts at 28s, ends at 148s */}
+                        {/* Teleop starts at 32s, ends at 152s */}
                         <div 
                           className="absolute top-0 h-full bg-green-500/50" 
-                          style={{ left: `${(28 / duration) * 100}%`, width: `${(120 / duration) * 100}%` }}
+                          style={{ left: `${(32 / duration) * 100}%`, width: `${(120 / duration) * 100}%` }}
                           title="Teleoperated (120s)"
                         />
                         
