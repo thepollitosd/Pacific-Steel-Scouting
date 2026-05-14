@@ -18,7 +18,7 @@ export function PrivacyPolicy() {
       canonical.setAttribute('rel', 'canonical');
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute("href", "https://pacific-steel-scouting.vercel.app/privacy");
+    canonical.setAttribute("href", "https://pacificscouting.vercel.app/privacy");
   }, []);
 
   return (

@@ -299,14 +299,14 @@ export function LandingPage() {
     updateMeta("theme-color", "#000000"); // Pitch black for the steel aesthetic
     
     // Canonical
-    updateLink("canonical", "https://pacific-steel-scouting.vercel.app/");
+    updateLink("canonical", "https://pacificscouting.vercel.app/");
 
     // OpenGraph
     updateMeta("og:title", "Pacific Steel Scouting | Elite Data Intelligence", true);
     updateMeta("og:description", "The official scouting platform of Team 5025. Transform match data into winning strategies.", true);
     updateMeta("og:type", "website", true);
-    updateMeta("og:image", "https://pacific-steel-scouting.vercel.app/og-image.png", true);
-    updateMeta("og:url", "https://pacific-steel-scouting.vercel.app/", true);
+    updateMeta("og:image", "https://pacificscouting.vercel.app/og-image.png", true);
+    updateMeta("og:url", "https://pacificscouting.vercel.app/", true);
     
     // Twitter
     updateMeta("twitter:card", "summary_large_image");
@@ -345,7 +345,7 @@ export function LandingPage() {
         "@type": "Organization",
         "name": "Pacific Steel Team 5025",
         "url": "https://team5025.com",
-        "logo": "https://pacific-steel-scouting.vercel.app/logo.svg",
+        "logo": "https://pacificscouting.vercel.app/logo.svg",
         "sameAs": [
           "https://github.com/thepollitosd",
           "https://instagram.com/team5025"
@@ -358,7 +358,7 @@ export function LandingPage() {
           "@type": "ListItem",
           "position": 1,
           "name": "Home",
-          "item": "https://pacific-steel-scouting.vercel.app/"
+          "item": "https://pacificscouting.vercel.app/"
         }]
       }
     ]);

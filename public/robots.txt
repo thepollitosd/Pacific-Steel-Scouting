@@ -10,4 +10,4 @@ Disallow: /setup
 Disallow: /customization
 Disallow: /export
 
-Sitemap: https://pacific-steel-scouting.vercel.app/sitemap.xml
+Sitemap: https://pacificscouting.vercel.app/sitemap.xml

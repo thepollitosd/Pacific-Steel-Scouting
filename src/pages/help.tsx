@@ -51,7 +51,7 @@ export function HelpSupport() {
       canonical.setAttribute('rel', 'canonical');
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute("href", "https://pacific-steel-scouting.vercel.app/help");
+    canonical.setAttribute("href", "https://pacificscouting.vercel.app/help");
 
     return () => {
       const oldScript = document.getElementById("faq-schema");

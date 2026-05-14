@@ -18,7 +18,7 @@ export function TermsOfService() {
       canonical.setAttribute('rel', 'canonical');
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute("href", "https://pacific-steel-scouting.vercel.app/terms");
+    canonical.setAttribute("href", "https://pacificscouting.vercel.app/terms");
   }, []);
 
   return (
