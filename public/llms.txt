@@ -1,0 +1,31 @@
+# Pacific Steel Scouting
+
+The official 2026 performance intelligence and match scouting platform for FRC Team 5025 (Pacific Steel).
+
+## Overview
+
+Pacific Steel Scouting is a high-performance web application designed for elite FIRST Robotics Competition (FRC) data intelligence. It integrates real-time telemetry, pit mapping, match scouting, and strategic analysis tools.
+
+## Key Features
+
+- **Match Scouting**: Real-time data entry for autonomous, teleop, and endgame performance.
+- **Pit Intelligence**: Comprehensive team tracking and visual pit mapping.
+- **Strategy Hub**: Drive team command center with match history and tactical replays.
+- **Alliance Selection**: Advanced data-driven pick list management.
+- **Offline Sync**: Robust data caching for reliable performance in low-connectivity competition environments.
+
+## Technical Stack
+
+- **Frontend**: React, React Router 7, Tailwind CSS (v4), shadcn/ui.
+- **Backend**: Convex (Real-time database and serverless functions).
+- **Authentication**: Convex Auth / Auth.js.
+- **Deployment**: Vercel.
+
+## Important Links
+
+- [Dashboard](https://pacificscouting.vercel.app/dashboard)
+- [Match Scouting](https://pacificscouting.vercel.app/scouting)
+- [Team List](https://pacificscouting.vercel.app/teams)
+- [Help & Support](https://pacificscouting.vercel.app/help)
+- [Privacy Policy](https://pacificscouting.vercel.app/privacy)
+- [Terms of Service](https://pacificscouting.vercel.app/terms)

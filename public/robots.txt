@@ -12,3 +12,6 @@ Disallow: /export
 
 Sitemap: https://pacificscouting.vercel.app/sitemap.xml
 Sitemap: https://pacificscouting.vercel.app/sitemap.txt
+
+# LLM Context
+llms: https://pacificscouting.vercel.app/llms.txt
