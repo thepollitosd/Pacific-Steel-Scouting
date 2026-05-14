@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import React, { useEffect, useState } from "react";
 import { RouterProvider, createBrowserRouter, Outlet, useNavigate, useLocation } from "react-router";
 import { ThemeProvider } from "next-themes";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
-import { useEffect, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { useTheme } from "next-themes";
 import { useAuthActions } from "@convex-dev/auth/react";
@@ -43,7 +43,8 @@ import {
   History,
   ChevronDown,
   ChevronRight,
-  Trophy
+  Trophy,
+  Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,6 +76,13 @@ import { DriverFeedback } from "./pages/driver-feedback";
 import { MatchHistory } from "./pages/match-history";
 import { AllianceSelection } from "./pages/alliance-selection";
 import { MatchReplay } from "./pages/match-replay";
+import { MatchSchedule } from "./pages/match-schedule";
+import { LandingPage } from "./pages/landing";
+import { PublicLayout } from "./components/layout/PublicLayout";
+import { ErrorBoundary } from "./components/error-boundary";
+import { OmniSearch } from "./components/omni-search";
+import { KeyboardShortcuts } from "./components/keyboard-shortcuts";
+import { useHotkeys } from "react-hotkeys-hook";
 
 function NavItem({ icon: Icon, label, href }: { icon: any, label: string, href: string }) {
   const navigate = useNavigate();
@@ -170,16 +178,9 @@ function TopHeader() {
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-        <form onSubmit={handleSearch} className="hidden sm:block relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Go to team..."
-            className="w-40 md:w-64 pl-9 h-9 bg-muted/50"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </form>
+        <div className="hidden sm:block">
+          <OmniSearch />
+        </div>
 
         <div className="flex items-center gap-1 shrink-0">
           <TooltipProvider>
@@ -225,10 +226,21 @@ function RootLayout() {
   console.log("RootLayout auth state:", { isAuthenticated, isLoading });
 
   useEffect(() => {
-    if (location.pathname === "/" && defaultLandingPage !== "/") {
-      navigate(defaultLandingPage);
+    if (isAuthenticated && (location.pathname === "/" || location.pathname === "/signin")) {
+      navigate("/dashboard");
     }
-  }, []);
+  }, [isAuthenticated, location.pathname]);
+
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  
+  // Global Shortcut for Help
+  useHotkeys('mod+/', (e) => {
+    e.preventDefault();
+    setIsShortcutsOpen(prev => !prev);
+  }, {
+    enableOnFormTags: true,
+    enabled: true
+  });
 
   if (isLoading) return null;
   if (!isAuthenticated) return <SignIn />;
@@ -266,7 +278,7 @@ function RootLayout() {
           )}
         </div>
         <nav className="flex-1 space-y-2 p-2 overflow-y-auto">
-          <NavItem icon={LayoutDashboard} label="Dashboard" href="/" />
+          <NavItem icon={LayoutDashboard} label="Dashboard" href="/dashboard" />
           
           {/* Scouting Group */}
           <div>
@@ -283,6 +295,7 @@ function RootLayout() {
             {scoutingOpen && isSidebarOpen && (
               <div className="mt-1 ml-2 space-y-1">
                 <NavItem icon={Search} label="Match Scouting" href="/scouting" />
+                <NavItem icon={Calendar} label="Match Schedule" href="/schedule" />
                 <NavItem icon={Users} label="Pit Scouting" href="/pit" />
                 <NavItem icon={MapIcon} label="Pit Map" href="/map" />
               </div>
@@ -381,7 +394,7 @@ function RootLayout() {
 
       {/* Bottom Nav for Mobile */}
       <nav className="flex md:hidden border-t bg-background/95 backdrop-blur-sm h-[calc(4rem+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] items-center justify-around shrink-0 touch-none">
-        <MobileNavItem icon={LayoutDashboard} label="Dash" href="/" />
+        <MobileNavItem icon={LayoutDashboard} label="Dash" href="/dashboard" />
 
         {isAdmin ? (
           <>
@@ -407,6 +420,10 @@ function RootLayout() {
       </nav>
 
       <Toaster position="top-right" richColors closeButton />
+      <KeyboardShortcuts 
+        isOpen={isShortcutsOpen} 
+        onClose={() => setIsShortcutsOpen(false)} 
+      />
     </div>
   );
 }
@@ -416,17 +433,31 @@ function RootLayout() {
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <RootLayout />,
+    element: <PublicLayout />,
+    errorElement: <ErrorBoundary />,
     children: [
-      { index: true, element: <Dashboard /> },
+      { index: true, element: <LandingPage /> },
+      { path: "privacy", element: <PrivacyPolicy /> },
+      { path: "terms", element: <TermsOfService /> },
+      { path: "signin", element: <SignIn /> },
+      { path: "help", element: <HelpSupport /> },
+    ],
+  },
+  {
+    path: "/",
+    element: <RootLayout />,
+    errorElement: <ErrorBoundary />,
+    children: [
+      { path: "dashboard", element: <Dashboard /> },
       { path: "scouting", element: <MatchScouting /> },
+      { path: "schedule", element: <MatchSchedule /> },
       { path: "pit", element: <PitScouting /> },
       { path: "map", element: <PitMap /> },
       { path: "teams", element: <TeamList /> },
       { path: "teams/:teamNumber", element: <TeamDetail /> },
       { path: "pick-lists", element: <PicklistHome /> },
       { path: "pick-lists/edit", element: <PickLists /> },
-       { path: "hub", element: <DriveTeamHub /> },
+      { path: "hub", element: <DriveTeamHub /> },
       { path: "driver-feedback", element: <DriverFeedback /> },
       { path: "match-history", element: <MatchHistory /> },
       { path: "strategy", element: <MatchStrategy /> },
@@ -436,16 +467,17 @@ const router = createBrowserRouter([
       { path: "export", element: <DataExport /> },
       { path: "setup", element: <EventSetup /> },
       { path: "customization", element: <Customization /> },
-      { path: "help", element: <HelpSupport /> },
-      { path: "privacy", element: <PrivacyPolicy /> },
-      { path: "terms", element: <TermsOfService /> },
-      { path: "*", element: <NotFound /> },
     ],
   },
   {
     path: "/pit-display",
     element: <PitDisplay />,
+    errorElement: <ErrorBoundary />,
   },
+  {
+    path: "*",
+    element: <NotFound />,
+  }
 ]);
 
 export default function App() {

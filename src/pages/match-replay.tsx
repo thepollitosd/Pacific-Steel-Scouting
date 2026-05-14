@@ -13,6 +13,36 @@ export function MatchReplay() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [scoreBreakdown, setScoreBreakdown] = useState<any>(null);
+  
+  const blueAutoPoints = scoreBreakdown?.blue?.totalAutoPoints || 0;
+  const redAutoPoints = scoreBreakdown?.red?.totalAutoPoints || 0;
+  const blueWonAuto = blueAutoPoints > redAutoPoints;
+  const redWonAuto = redAutoPoints > blueAutoPoints;
+
+  const getCurrentPeriod = () => {
+    if (currentTime < 6) return "Pregame";
+    if (currentTime < 26) return "Auto";
+    if (currentTime < 30) return "Transition";
+    if (currentTime < 40) return "Transition Shift";
+    if (currentTime < 65) return "Shift 1";
+    if (currentTime < 90) return "Shift 2";
+    if (currentTime < 115) return "Shift 3";
+    if (currentTime < 140) return "Shift 4";
+    if (currentTime < 170) return "End Game";
+    return "Postgame";
+  };
+
+  const getCurrentOwner = () => {
+    const period = getCurrentPeriod();
+    if (period === "Shift 1" || period === "Shift 3") {
+      return blueWonAuto ? "Red" : redWonAuto ? "Blue" : "None";
+    }
+    if (period === "Shift 2" || period === "Shift 4") {
+      return blueWonAuto ? "Blue" : redWonAuto ? "Red" : "None";
+    }
+    return "N/A";
+  };
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -41,16 +71,19 @@ export function MatchReplay() {
     if (currentMatch) {
       const match = matches.find((m: any) => m._id === currentMatch);
       if (match && match.tbaKey) {
-        getMatchVideos({ matchKey: match.tbaKey }).then((videos: any) => {
+        getMatchVideos({ matchKey: match.tbaKey }).then((matchData: any) => {
+          const videos = matchData.videos || [];
           const ytVideo = videos.find((v: any) => v.type === "youtube");
           if (ytVideo) {
             setYoutubeKey(ytVideo.key);
           } else {
             setYoutubeKey("");
           }
+          setScoreBreakdown(matchData.score_breakdown);
         }).catch(err => {
           console.error("Failed to fetch match videos:", err);
           setYoutubeKey("");
+          setScoreBreakdown(null);
         });
       }
     }
@@ -77,6 +110,9 @@ export function MatchReplay() {
           'playsinline': 1,
           'controls': 0, // Disable default controls to use our own
           'rel': 0,
+          'disablekb': 1,
+          'modestbranding': 1,
+          'fs': 0,
         },
         events: {
           'onReady': (event: any) => {
@@ -338,6 +374,16 @@ export function MatchReplay() {
               {youtubeKey ? (
                 <>
                   <div id="youtube-player" className="absolute inset-0 w-full h-full" />
+                  {/* HUD Overlay */}
+                  <div className="absolute top-2 left-2 bg-black/70 text-white p-2 rounded z-20 font-mono text-xs sm:text-sm">
+                    <div>Period: {getCurrentPeriod()}</div>
+                    <div>Owner: {getCurrentOwner()}</div>
+                    {scoreBreakdown && (
+                      <div className="text-xs mt-1 text-muted-foreground">
+                        Auto: B:{scoreBreakdown.blue?.totalAutoPoints} R:{scoreBreakdown.red?.totalAutoPoints}
+                      </div>
+                    )}
+                  </div>
                   {/* Transparent Canvas Overlay */}
                   <canvas
                     ref={canvasRef}
@@ -387,25 +433,55 @@ export function MatchReplay() {
                     />
                     
                     {/* Match Periods Markers */}
-                    {/* Auto starts at 5s, ends at 25s */}
                     {duration > 0 && (
                       <>
+                        {/* Auto: 6s to 26s */}
                         <div 
                           className="absolute top-0 h-full bg-yellow-500/50" 
-                          style={{ left: `${(5 / duration) * 100}%`, width: `${(20 / duration) * 100}%` }}
-                          title="Autonomous (20s)"
+                          style={{ left: `${(6 / duration) * 100}%`, width: `${(20 / duration) * 100}%` }}
+                          title="Auto (20s)"
                         />
-                        {/* Delay starts at 25s, ends at 28s */}
+                        {/* Transition: 26s to 30s */}
+                        <div 
+                          className="absolute top-0 h-full bg-gray-500/30" 
+                          style={{ left: `${(26 / duration) * 100}%`, width: `${(4 / duration) * 100}%` }}
+                          title="Transition (4s)"
+                        />
+                        {/* Transition Shift: 30s to 40s */}
                         <div 
                           className="absolute top-0 h-full bg-orange-500/50" 
-                          style={{ left: `${(25 / duration) * 100}%`, width: `${(3 / duration) * 100}%` }}
-                          title="Delay (3s)"
+                          style={{ left: `${(30 / duration) * 100}%`, width: `${(10 / duration) * 100}%` }}
+                          title="Transition Shift (10s)"
                         />
-                        {/* Teleop starts at 28s, ends at 148s */}
+                        {/* Shift 1: 40s to 65s */}
+                        <div 
+                          className={`absolute top-0 h-full ${blueWonAuto ? "bg-red-500/50" : redWonAuto ? "bg-blue-500/50" : "bg-muted"}`}
+                          style={{ left: `${(40 / duration) * 100}%`, width: `${(25 / duration) * 100}%` }}
+                          title="Shift 1 (25s)"
+                        />
+                        {/* Shift 2: 65s to 90s */}
+                        <div 
+                          className={`absolute top-0 h-full ${blueWonAuto ? "bg-blue-500/50" : redWonAuto ? "bg-red-500/50" : "bg-muted"}`}
+                          style={{ left: `${(65 / duration) * 100}%`, width: `${(25 / duration) * 100}%` }}
+                          title="Shift 2 (25s)"
+                        />
+                        {/* Shift 3: 90s to 115s */}
+                        <div 
+                          className={`absolute top-0 h-full ${blueWonAuto ? "bg-red-500/50" : redWonAuto ? "bg-blue-500/50" : "bg-muted"}`}
+                          style={{ left: `${(90 / duration) * 100}%`, width: `${(25 / duration) * 100}%` }}
+                          title="Shift 3 (25s)"
+                        />
+                        {/* Shift 4: 115s to 140s */}
+                        <div 
+                          className={`absolute top-0 h-full ${blueWonAuto ? "bg-blue-500/50" : redWonAuto ? "bg-red-500/50" : "bg-muted"}`}
+                          style={{ left: `${(115 / duration) * 100}%`, width: `${(25 / duration) * 100}%` }}
+                          title="Shift 4 (25s)"
+                        />
+                        {/* End Game: 140s to 170s */}
                         <div 
                           className="absolute top-0 h-full bg-green-500/50" 
-                          style={{ left: `${(28 / duration) * 100}%`, width: `${(120 / duration) * 100}%` }}
-                          title="Teleoperated (120s)"
+                          style={{ left: `${(140 / duration) * 100}%`, width: `${(30 / duration) * 100}%` }}
+                          title="End Game (30s)"
                         />
                         
                         {/* Current Time Indicator */}
@@ -418,10 +494,12 @@ export function MatchReplay() {
                   </div>
                 </div>
                 
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1"><div className="w-2 h-2 bg-yellow-500/50 rounded-full" /> Auto: 5s - 25s</div>
-                  <div className="flex items-center gap-1"><div className="w-2 h-2 bg-orange-500/50 rounded-full" /> Delay: 25s - 28s</div>
-                  <div className="flex items-center gap-1"><div className="w-2 h-2 bg-green-500/50 rounded-full" /> Teleop: 28s - 148s</div>
+                <div className="flex justify-between text-xs text-muted-foreground overflow-x-auto gap-2">
+                  <div className="flex items-center gap-1 shrink-0"><div className="w-2 h-2 bg-yellow-500/50 rounded-full" /> Auto: 6-26s</div>
+                  <div className="flex items-center gap-1 shrink-0"><div className="w-2 h-2 bg-orange-500/50 rounded-full" /> Trans: 30-40s</div>
+                  <div className="flex items-center gap-1 shrink-0"><div className="w-2 h-2 bg-red-500/50 rounded-full" /> Red Shifts</div>
+                  <div className="flex items-center gap-1 shrink-0"><div className="w-2 h-2 bg-blue-500/50 rounded-full" /> Blue Shifts</div>
+                  <div className="flex items-center gap-1 shrink-0"><div className="w-2 h-2 bg-green-500/50 rounded-full" /> End Game: 140-170s</div>
                 </div>
               </div>
             )}

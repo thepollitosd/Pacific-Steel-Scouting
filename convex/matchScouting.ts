@@ -96,3 +96,12 @@ export const getTeamAverages = query({
   },
 });
 
+export const getByEvent = query({
+  args: { eventId: v.id("events") },
+  handler: async (ctx, args) => {
+    return await ctx.db.query("matchScouting")
+      .filter(q => q.eq(q.field("eventId"), args.eventId))
+      .collect();
+  },
+});
+

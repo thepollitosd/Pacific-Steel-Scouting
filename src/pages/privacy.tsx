@@ -1,85 +1,121 @@
-import { ShieldCheck, ArrowLeft } from "lucide-react";
+import { ShieldCheck, ArrowLeft, Lock, Eye, Share2, Server } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
+import { motion } from "motion/react";
+
+import { useEffect } from "react";
 
 export function PrivacyPolicy() {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    document.title = "Privacy Protocol | Pacific Steel Scouting";
+    
+    // Canonical link
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute("href", "https://pacific-steel-scouting.vercel.app/privacy");
+  }, []);
+
   return (
-    <div className="space-y-8 max-w-4xl mx-auto pb-12">
-      <div>
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4 -ml-4">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
-        </Button>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <ShieldCheck className="h-8 w-8 text-primary" />
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
+      
+      <div className="max-w-4xl mx-auto px-6 py-20 relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16 space-y-4"
+        >
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate("/")}
+            className="mb-8 hover:bg-muted rounded-full px-4 group"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+            Back to Home
+          </Button>
+          <div className="inline-flex p-4 bg-primary/10 rounded-3xl mb-4 border border-primary/20">
+            <ShieldCheck className="h-10 w-10 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Privacy Policy</h1>
-        </div>
-        <p className="text-muted-foreground">Last updated: May 10, 2026</p>
-      </div>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic">Privacy Protocol</h1>
+          <p className="text-muted-foreground font-bold tracking-widest uppercase text-xs">Directive 5025.A // Revised May 2026</p>
+        </motion.div>
 
-      <div className="prose prose-sm dark:prose-invert max-w-none space-y-6">
-        <section>
-          <h2 className="text-2xl font-semibold mb-3">1. Introduction</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            Welcome to the Pacific Scout App, developed and maintained by FIRST Robotics Competition Team 5025 ("we", "us", or "our"). We are committed to protecting the privacy of our team members, our users, and the data we collect. This Privacy Policy outlines our practices regarding the collection, use, and disclosure of information when you use our scouting application.
-          </p>
-        </section>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="bg-card/50 backdrop-blur-xl border-2 border-border/50 rounded-[3rem] p-8 md:p-16 shadow-2xl space-y-16"
+        >
+          <section className="space-y-6">
+            <h2 className="text-2xl font-black uppercase tracking-tight flex items-center gap-4 text-foreground">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary text-sm font-black">01</span>
+              Intellectual Framework
+            </h2>
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              The Pacific Scout ecosystem is an engineering resource developed by <span className="text-foreground font-bold">Team 5025</span>. 
+              We prioritize data integrity and user confidentiality across all operational theaters.
+            </p>
+          </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-3">2. Information We Collect</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            <strong>Account Information:</strong> When you register an account, we collect your email address, name, and role on the team. This information is required for authentication and to attribute scouting data to the correct individual.
-          </p>
-          <p className="text-muted-foreground leading-relaxed mt-2">
-            <strong>Scouting Data:</strong> As part of the core functionality of the app, you will submit data regarding other robotics teams. This includes match performance metrics, pit scouting interviews, robot specifications, and personal observations. This data is related to public performances and is collected solely for strategic purposes during FRC events.
-          </p>
-          <p className="text-muted-foreground leading-relaxed mt-2">
-            <strong>Usage Data:</strong> We may collect diagnostic information about your usage of the application, including offline sync errors, crash reports, and basic analytics to improve the app's performance.
-          </p>
-        </section>
+          <section className="space-y-8">
+            <h2 className="text-2xl font-black uppercase tracking-tight flex items-center gap-4 text-foreground">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary text-sm font-black">02</span>
+              Data Acquisition
+            </h2>
+            <div className="grid gap-4">
+              {[
+                { title: "Operator Identity", desc: "Encrypted email and credential mapping for secure access.", icon: Lock },
+                { title: "Field Telemetry", desc: "Match performance, mechanical diagnostics, and strategic observations.", icon: Eye },
+                { title: "System Analytics", desc: "Diagnostic payloads to optimize sync latency and offline reliability.", icon: Server }
+              ].map((item, i) => (
+                <div key={i} className="flex gap-6 p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-colors group">
+                  <div className="h-12 w-12 rounded-xl bg-background border flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                    <item.icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-foreground mb-1 uppercase text-sm tracking-wide">{item.title}</h4>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-3">3. How We Use Your Information</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            We use the collected data for the following purposes:
-          </p>
-          <ul className="list-disc pl-6 mt-2 text-muted-foreground space-y-1">
-            <li>To provide, maintain, and improve the scouting application.</li>
-            <li>To compile strategic databases for use during FRC competitions.</li>
-            <li>To authenticate users and ensure data integrity.</li>
-            <li>To monitor usage patterns and troubleshoot technical issues.</li>
-          </ul>
-        </section>
+          <section className="space-y-6">
+            <h2 className="text-2xl font-black uppercase tracking-tight flex items-center gap-4 text-foreground">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary text-sm font-black">03</span>
+              Information Sharing
+            </h2>
+            <div className="p-8 rounded-[2rem] bg-primary text-primary-foreground shadow-xl shadow-primary/20">
+              <div className="flex items-center gap-3 mb-4">
+                <Share2 className="h-6 w-6" />
+                <h3 className="text-xl font-bold italic">Alliance Interoperability</h3>
+              </div>
+              <p className="text-primary-foreground/90 leading-relaxed mb-6">
+                Scouting intel is strictly classified for Team 5025 usage. During elimination bracket selection, 
+                subsets of non-sensitive telemetry may be shared with designated alliance partners to optimize strategic output.
+              </p>
+              <div className="h-px bg-white/20 mb-6" />
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70">
+                Authorized By: Engineering Lead // Security Clearance Level 2
+              </p>
+            </div>
+          </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-3">4. Data Sharing and Disclosure</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            <strong>Internal Use:</strong> The scouting data collected is considered the intellectual property of Team 5025. It is distributed internally among team members and mentors.
-          </p>
-          <p className="text-muted-foreground leading-relaxed mt-2">
-            <strong>Alliance Partners:</strong> During elimination rounds or for strategic negotiations, we may share specific subsets of our scouting data with our alliance partners. 
-          </p>
-          <p className="text-muted-foreground leading-relaxed mt-2">
-            <strong>Third-Party Services:</strong> We use Convex as our backend provider and Vercel for hosting and analytics. Your data is stored on their secure servers and is subject to their respective privacy policies. We do not sell, rent, or trade your personal information to third parties.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-semibold mb-3">5. Data Security</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            The security of your data is important to us. We implement standard security protocols, including encrypted databases and secure authentication flows, to protect against unauthorized access or alteration. However, no method of transmission over the internet or electronic storage is 100% secure.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-semibold mb-3">6. Changes to this Policy</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
-          </p>
-        </section>
+          <footer className="pt-8 border-t border-border/50 text-center">
+            <p className="text-muted-foreground text-sm">
+              Questions regarding privacy protocols? <Button variant="link" className="font-bold text-primary p-0 h-auto">Contact HQ</Button>
+            </p>
+          </footer>
+        </motion.div>
       </div>
     </div>
   );

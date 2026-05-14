@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /scouting
+Disallow: /pit
+Disallow: /teams/*
+Disallow: /pick-lists/*
+Disallow: /hub
+Disallow: /setup
+Disallow: /customization
+Disallow: /export
+
+Sitemap: https://pacific-steel-scouting.vercel.app/sitemap.xml

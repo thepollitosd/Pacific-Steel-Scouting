@@ -1,77 +1,116 @@
-import { FileText, ArrowLeft } from "lucide-react";
+import { FileText, ArrowLeft, Gavel, Scale, AlertCircle, FileCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
+import { motion } from "motion/react";
+
+import { useEffect } from "react";
 
 export function TermsOfService() {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    document.title = "Terms of Service | Pacific Steel Scouting";
+    
+    // Canonical link
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute("href", "https://pacific-steel-scouting.vercel.app/terms");
+  }, []);
+
   return (
-    <div className="space-y-8 max-w-4xl mx-auto pb-12">
-      <div>
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4 -ml-4">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back
-        </Button>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <FileText className="h-8 w-8 text-primary" />
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute top-0 right-1/2 translate-x-1/2 w-full max-w-7xl h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
+      
+      <div className="max-w-4xl mx-auto px-6 py-20 relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16 space-y-4"
+        >
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate("/")}
+            className="mb-8 hover:bg-muted rounded-full px-4 group"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+            Back to Home
+          </Button>
+          <div className="inline-flex p-4 bg-primary/10 rounded-3xl mb-4 border border-primary/20">
+            <FileText className="h-10 w-10 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Terms of Service</h1>
-        </div>
-        <p className="text-muted-foreground">Last updated: May 10, 2026</p>
-      </div>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase italic text-foreground">Terms of Service</h1>
+          <p className="text-muted-foreground font-bold tracking-widest uppercase text-xs">Directive 5025.B // Revised May 2026</p>
+        </motion.div>
 
-      <div className="prose prose-sm dark:prose-invert max-w-none space-y-6">
-        <section>
-          <h2 className="text-2xl font-semibold mb-3">1. Acceptance of Terms</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            By accessing or using the Pacific Scout App, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, then you do not have permission to access the service. These terms apply to all users, scouters, and mentors of Team 5025.
-          </p>
-        </section>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="bg-card/50 backdrop-blur-xl border-2 border-border/50 rounded-[3rem] p-8 md:p-16 shadow-2xl space-y-16"
+        >
+          <section className="space-y-6">
+            <h2 className="text-2xl font-black uppercase tracking-tight flex items-center gap-4 text-foreground">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary text-sm font-black">01</span>
+              User Authorization
+            </h2>
+            <div className="flex gap-4 p-6 bg-muted/30 border-2 border-dashed rounded-2xl">
+              <AlertCircle className="h-6 w-6 text-primary shrink-0 mt-1" />
+              <p className="text-muted-foreground text-base leading-relaxed">
+                Access to the Pacific Scout platform is strictly reserved for authorized members of <span className="text-foreground font-bold">Team 5025</span> and their verified guests. 
+                Unauthorized usage, credential sharing, or de-compilation of the application is strictly prohibited.
+              </p>
+            </div>
+          </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-3">2. User Responsibilities</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            You are responsible for any activity that occurs through your account. As a scouter, you agree to:
-          </p>
-          <ul className="list-disc pl-6 mt-2 text-muted-foreground space-y-1">
-            <li>Submit accurate, truthful, and unbiased data regarding match performance and pit interviews.</li>
-            <li>Maintain the confidentiality of your account credentials.</li>
-            <li>Refrain from submitting inappropriate, offensive, or unprofessional comments in notes or observations.</li>
-            <li>Use the application solely for its intended purpose: to aid Team 5025 in strategic decisions.</li>
-          </ul>
-        </section>
+          <section className="space-y-8">
+            <h2 className="text-2xl font-black uppercase tracking-tight flex items-center gap-4 text-foreground">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary text-sm font-black">02</span>
+              Standard of Conduct
+            </h2>
+            <div className="grid gap-6">
+              {[
+                { title: "Data Integrity", desc: "Intentional submission of false, misleading, or malicious data is grounds for immediate account suspension.", icon: Gavel },
+                { title: "Network Stability", desc: "Users must not attempt to disrupt the Convex backend or Nexus pit mapping infrastructure.", icon: Scale },
+                { title: "Respectful Scouting", desc: "Observations of other teams must remain professional, objective, and compliant with FIRST core values.", icon: FileCheck }
+              ].map((item, i) => (
+                <div key={i} className="flex gap-6 p-6 rounded-2xl hover:bg-muted/50 transition-colors group">
+                  <div className="h-12 w-12 rounded-xl bg-background border flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
+                    <item.icon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-foreground mb-1 uppercase text-sm tracking-wide">{item.title}</h4>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-3">3. Data Integrity and Offline Sync</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            The Pacific Scout App is designed to operate in environments with poor network connectivity by temporarily storing data on your device. You understand and agree that:
-          </p>
-          <ul className="list-disc pl-6 mt-2 text-muted-foreground space-y-1">
-            <li>You must ensure the app successfully synchronizes with the main server when a network connection is available.</li>
-            <li>Team 5025 and the development team are not liable for data loss resulting from hardware failure, browser cache clearing, or unresolved sync conflicts.</li>
-          </ul>
-        </section>
+          <section className="space-y-6">
+            <h2 className="text-2xl font-black uppercase tracking-tight flex items-center gap-4 text-foreground">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary text-sm font-black">03</span>
+              Liability & Warranty
+            </h2>
+            <div className="p-8 rounded-[2rem] border-2 border-primary/20 bg-primary/5 relative">
+              <p className="text-muted-foreground leading-relaxed italic">
+                The Pacific Scout platform is provided "AS IS" for competitive research purposes. Team 5025 does not guarantee 100% 
+                uptime during field operations, though best efforts are made via local caching and offline synchronization protocols.
+              </p>
+            </div>
+          </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-3">4. Intellectual Property</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            The codebase, design, layout, and aggregated scouting database are the intellectual property of Team 5025. You may not distribute, reproduce, or exploit any portion of the service for commercial purposes or share the database externally without explicit authorization from team leadership.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-semibold mb-3">5. Termination</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            We reserve the right to terminate or suspend access to our service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms. Upon termination, your right to use the service will immediately cease.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-semibold mb-3">6. Changes to Terms</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            We reserve the right, at our sole discretion, to modify or replace these Terms at any time. By continuing to access or use our service after those revisions become effective, you agree to be bound by the revised terms.
-          </p>
-        </section>
+          <footer className="pt-8 border-t border-border/50 text-center">
+            <p className="text-muted-foreground text-sm font-medium">
+              By accessing the Pacific Scout interface, you acknowledge and agree to these terms.
+            </p>
+          </footer>
+        </motion.div>
       </div>
     </div>
   );

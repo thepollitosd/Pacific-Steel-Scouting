@@ -9,6 +9,9 @@ import { toast } from "sonner";
 import { Minus, Plus } from "lucide-react";
 import { triggerFeedback } from "../../lib/feedback";
 import { useUIStore } from "../store/use-ui-store";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSearchParams } from "react-router";
+import { useHotkeys } from "react-hotkeys-hook";
 
 function Counter({ label, value, onChange }: { label: string, value: number, onChange: (val: number) => void }) {
   return (
@@ -52,9 +55,36 @@ function BallCounter({ label, value, onChange }: { label: string, value: number,
 export function MatchScouting() {
   const activeEvent = useQuery(api.events.getActiveEvent);
   const saveMatch = useMutation(api.matchScouting.saveMatchScouting);
+  const matches = useQuery(api.events.listMatches, activeEvent ? { eventId: activeEvent._id } : "skip") || [];
+  const [searchParams] = useSearchParams();
+  const matchParam = searchParams.get("match");
 
-  const [matchNumber, setMatchNumber] = useState("");
+  const [matchNumber, setMatchNumber] = useState(matchParam || "");
   const [teamNumber, setTeamNumber] = useState("");
+
+  // Power User Match Navigation
+  useHotkeys('mod+[', (e) => {
+    e.preventDefault();
+    const currentIndex = matches.findIndex((m: any) => m.number === parseInt(matchNumber));
+    if (currentIndex > 0) {
+      setMatchNumber(matches[currentIndex - 1].number.toString());
+      setTeamNumber("");
+      toast.info(`Switched to Qual ${matches[currentIndex - 1].number}`);
+    }
+  }, { enabled: !!matches.length });
+
+  useHotkeys('mod+]', (e) => {
+    e.preventDefault();
+    const currentIndex = matches.findIndex((m: any) => m.number === parseInt(matchNumber));
+    if (currentIndex < matches.length - 1) {
+      setMatchNumber(matches[currentIndex + 1].number.toString());
+      setTeamNumber("");
+      toast.info(`Switched to Qual ${matches[currentIndex + 1].number}`);
+    }
+  }, { enabled: !!matches.length });
+  
+  const selectedMatchObj = matches.find((m: any) => m.number === parseInt(matchNumber));
+  const teamsInMatch = selectedMatchObj ? [...selectedMatchObj.redAlliance, ...selectedMatchObj.blueAlliance] : [];
   
   // Auto
   const [autoBallsShot, setAutoBallsShot] = useState(0);
@@ -170,14 +200,42 @@ export function MatchScouting() {
       </div>
 
       <form onSubmit={handleSave} className="space-y-8">
-        <div className="grid grid-cols-2 gap-4 p-4 border rounded-xl bg-card">
+        <div className="space-y-4 p-4 border rounded-xl bg-card">
           <div className="space-y-2">
-            <Label>Match #</Label>
-            <Input type="number" required className="h-12 text-xl" value={matchNumber} onChange={e => setMatchNumber(e.target.value)} />
+            <Label>Select Match</Label>
+            <Select value={matchNumber} onValueChange={(val) => { setMatchNumber(val); setTeamNumber(""); }}>
+              <SelectTrigger className="h-12 text-xl">
+                <SelectValue placeholder="Select Match" />
+              </SelectTrigger>
+              <SelectContent>
+                {matches.map((match: any) => (
+                  <SelectItem key={match._id} value={match.number.toString()}>
+                    Qual {match.number}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
           <div className="space-y-2">
-            <Label>Team #</Label>
-            <Input type="number" required className="h-12 text-xl" value={teamNumber} onChange={e => setTeamNumber(e.target.value)} />
+            <Label>Select Team</Label>
+            {teamsInMatch.length > 0 ? (
+              <div className="grid grid-cols-3 gap-2">
+                {teamsInMatch.map((team) => (
+                  <Button
+                    key={team}
+                    type="button"
+                    variant={teamNumber === team.toString() ? "default" : "outline"}
+                    className={`h-12 text-lg font-bold ${selectedMatchObj?.redAlliance.includes(team) ? "border-red-500 text-red-500 hover:bg-red-500/10" : "border-blue-500 text-blue-500 hover:bg-blue-500/10"}`}
+                    onClick={() => setTeamNumber(team.toString())}
+                  >
+                    {team}
+                  </Button>
+                ))}
+              </div>
+            ) : (
+              <Input type="number" required className="h-12 text-xl" placeholder="Enter Team #" value={teamNumber} onChange={e => setTeamNumber(e.target.value)} />
+            )}
           </div>
         </div>
 

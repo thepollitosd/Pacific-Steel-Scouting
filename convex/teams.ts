@@ -14,3 +14,9 @@ export const getByEvent = query({
     return teams.sort((a, b) => a.number - b.number);
   },
 });
+export const list = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("teams").collect();
+  },
+});

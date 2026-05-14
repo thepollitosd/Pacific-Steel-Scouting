@@ -41,7 +41,7 @@ export const importEvent = action({
     const teamsToImport = teamsData.map((t: any) => ({
       number: t.team_number,
       name: t.nickname,
-      location: `${t.city}, ${t.state_prov}`,
+      location: [t.city, t.state_prov].filter(Boolean).join(", ") || "Unknown Location",
       tbaKey: t.key,
     }));
 
@@ -60,9 +60,9 @@ export const importEvent = action({
       eventKey: args.eventKey,
       name: eventData.name,
       year: eventData.year,
-      city: eventData.city,
-      state: eventData.state_prov,
-      country: eventData.country,
+      city: eventData.city || "Unknown City",
+      state: eventData.state_prov || "Unknown State",
+      country: eventData.country || "USA",
       teams: teamsToImport,
       matches: matchesToImport,
     });
@@ -121,6 +121,6 @@ export const getMatchVideos = action({
     if (!res.ok) throw new Error("Failed to fetch match from TBA");
     
     const data = await res.json();
-    return data.videos || [];
+    return data; // Return full match data including score_breakdown
   },
 });

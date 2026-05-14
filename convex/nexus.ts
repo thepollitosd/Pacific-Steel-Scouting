@@ -24,9 +24,9 @@ export const importPitLocations = action({
 
     if (!response.ok) {
       if (response.status === 404) {
-        throw new Error("Event not found on Nexus or event does not use Nexus for pits.");
+        throw new Error(`Event "${args.eventKey}" not found on Nexus. Pits might not be set up yet.`);
       }
-      throw new Error(`Failed to fetch from Nexus: ${response.statusText}`);
+      throw new Error(`Nexus API Error: ${response.statusText} (${response.status})`);
     }
 
     const data = await response.json(); // Expected: { "1234": "A1", "5678": "B12" }
@@ -126,7 +126,7 @@ export const getPitMap = action({
       pitsData = await pitsResponse.json();
     }
 
-    // If we have no map and no pits, return null
+    // If we have no map and no pits, return null to show "No Map Available"
     if (!mapData && Object.keys(pitsData).length === 0) {
       return null;
     }
@@ -153,7 +153,6 @@ export const getPitMap = action({
         }
       }
     }
-
     return mapData;
   },
 });

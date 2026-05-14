@@ -242,7 +242,7 @@ export function PitMap() {
                   <div
                     key={id}
                     className={`
-                      absolute border rounded-md flex flex-col items-center justify-center text-xs font-mono transition-colors
+                      absolute border rounded-md flex flex-col items-center justify-center font-mono transition-colors
                       ${scoutingRecord ? 'bg-green-500/10 border-green-500 text-green-700' : 'bg-muted/50 border-muted text-muted-foreground'}
                       ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}
                       hover:bg-accent hover:text-accent-foreground cursor-pointer
@@ -252,6 +252,7 @@ export function PitMap() {
                       top: pit.position.y - pit.size.y / 2,
                       width: pit.size.x,
                       height: pit.size.y,
+                      fontSize: Math.min(pit.size.x / 4, 12), // Dynamic font size
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -260,19 +261,22 @@ export function PitMap() {
                   >
                     <span className="font-bold">{id}</span>
                     {(teamNum || scoutingRecord) && (
-                      <span className="mt-1 font-sans font-extrabold text-sm flex items-center gap-1">
+                      <span 
+                        className="mt-0.5 font-sans font-extrabold flex items-center gap-1 overflow-hidden"
+                        style={{ fontSize: Math.min(pit.size.x / 3.5, 14) }}
+                      >
                         {teamNum || scoutingRecord?.teamNumber}
                         {scoutingRecord?.shooterType && (
                           <span title={scoutingRecord.shooterType}>
-                            {scoutingRecord.shooterType === "Turret" && <Crosshair className="h-3 w-3" />}
-                            {scoutingRecord.shooterType === "Dumper" && <CircleIcon className="h-3 w-3" />}
+                            {scoutingRecord.shooterType === "Turret" && <Crosshair className="h-2.5 w-2.5" />}
+                            {scoutingRecord.shooterType === "Dumper" && <CircleIcon className="h-2.5 w-2.5" />}
                             {scoutingRecord.shooterType === "Misc" && (
-                              scoutingRecord.shootingPaths === 1 ? <Tally1 className="h-3 w-3" /> :
-                              scoutingRecord.shootingPaths === 2 ? <Tally2 className="h-3 w-3" /> :
-                              scoutingRecord.shootingPaths === 3 ? <Tally3 className="h-3 w-3" /> :
-                              scoutingRecord.shootingPaths === 4 ? <Tally4 className="h-3 w-3" /> :
-                              scoutingRecord.shootingPaths === 5 ? <Tally5 className="h-3 w-3" /> :
-                              <Asterisk className="h-3 w-3" />
+                              scoutingRecord.shootingPaths === 1 ? <Tally1 className="h-2.5 w-2.5" /> :
+                              scoutingRecord.shootingPaths === 2 ? <Tally2 className="h-2.5 w-2.5" /> :
+                              scoutingRecord.shootingPaths === 3 ? <Tally3 className="h-2.5 w-2.5" /> :
+                              scoutingRecord.shootingPaths === 4 ? <Tally4 className="h-2.5 w-2.5" /> :
+                              scoutingRecord.shootingPaths === 5 ? <Tally5 className="h-2.5 w-2.5" /> :
+                              <Asterisk className="h-2.5 w-2.5" />
                             )}
                           </span>
                         )}
@@ -285,10 +289,16 @@ export function PitMap() {
           ) : nexusMap === undefined ? (
             <div className="text-muted-foreground">Loading Nexus map...</div>
           ) : (
-            <div className="text-muted-foreground bg-muted p-6 rounded-lg text-center max-w-md mx-auto">
-              <MapPin className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-              <h3 className="text-lg font-semibold mb-2">No Pit Map Available</h3>
-              <p className="text-sm">This event does not have a pit map available on FRC Nexus or the map could not be loaded.</p>
+            <div className="text-muted-foreground bg-muted p-8 rounded-lg text-center max-w-lg mx-auto border-2 border-dashed border-muted-foreground/20">
+              <MapPin className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
+              <h3 className="text-xl font-bold mb-2 text-foreground">No Pit Map Available</h3>
+              <p className="text-sm mb-6">
+                This event (<b>{activeEvent?.key}</b>) does not have a map on FRC Nexus yet. 
+                If the event has started, try importing pit locations in the Event Setup.
+              </p>
+              <Button variant="outline" onClick={() => navigate("/setup")}>
+                Go to Event Setup
+              </Button>
             </div>
           )}
         </div>
