@@ -1,0 +1,5 @@
+https://pacificscouting.vercel.app/
+https://pacificscouting.vercel.app/help
+https://pacificscouting.vercel.app/privacy
+https://pacificscouting.vercel.app/terms
+https://pacificscouting.vercel.app/signin

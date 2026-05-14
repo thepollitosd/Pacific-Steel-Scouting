@@ -11,3 +11,4 @@ Disallow: /customization
 Disallow: /export
 
 Sitemap: https://pacificscouting.vercel.app/sitemap.xml
+Sitemap: https://pacificscouting.vercel.app/sitemap.txt
